@@ -4,9 +4,19 @@
   "description": "Stars!",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "parcel src/index.html"
   },
-  "keywords": ["WebGL", "Astronomy"],
+  "keywords": [
+    "WebGL",
+    "Astronomy"
+  ],
   "author": "Adam C. Reynolds",
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "parcel": "^2.13.3"
+  }
 }
