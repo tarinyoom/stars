@@ -4,8 +4,9 @@
   "description": "Stars!",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "parcel src/index.html"
+  "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [
     "WebGL",
@@ -17,6 +18,6 @@
     "typescript": "^5.7.3"
   },
   "devDependencies": {
-    "parcel": "^2.13.3"
+    "vite": "^6.1.0"
   }
 }
