@@ -1,4 +1,5 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
+import { createSphere } from "./createSphere";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -47,48 +48,6 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 }
 
 gl.useProgram(program);
-
-// Function to generate a sphere mesh
-function createSphere(radius: number, latitudeBands: number, longitudeBands: number) {
-    const positions = [];
-    const normals = [];
-    const indices = [];
-
-    for (let lat = 0; lat <= latitudeBands; lat++) {
-        const theta = (lat * Math.PI) / latitudeBands;
-        const sinTheta = Math.sin(theta);
-        const cosTheta = Math.cos(theta);
-
-        for (let lon = 0; lon <= longitudeBands; lon++) {
-            const phi = (lon * 2 * Math.PI) / longitudeBands;
-            const sinPhi = Math.sin(phi);
-            const cosPhi = Math.cos(phi);
-
-            const x = cosPhi * sinTheta;
-            const y = cosTheta;
-            const z = sinPhi * sinTheta;
-
-            positions.push(radius * x, radius * y, radius * z);
-            normals.push(x, y, z); // Normals are just the unit sphere coordinates
-        }
-    }
-
-    for (let lat = 0; lat < latitudeBands; lat++) {
-        for (let lon = 0; lon < longitudeBands; lon++) {
-            const first = lat * (longitudeBands + 1) + lon;
-            const second = first + longitudeBands + 1;
-
-            indices.push(first, second, first + 1);
-            indices.push(second, second + 1, first + 1);
-        }
-    }
-
-    return {
-        positions: new Float32Array(positions),
-        normals: new Float32Array(normals),
-        indices: new Uint16Array(indices),
-    };
-}
 
 // Light properties
 const lightDirection = new Float32Array([-0.5, -1.0, -0.5]); // Directional light
@@ -141,6 +100,17 @@ const normalAttribute = gl.getAttribLocation(program, "normal");
 gl.enableVertexAttribArray(normalAttribute);
 gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
+
+const texCoordBuffer = gl.createBuffer();
+if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
+
+gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, sphereData.texCoords, gl.STATIC_DRAW);
+
+const texCoordAttribute = gl.getAttribLocation(program, "texCoord");
+gl.enableVertexAttribArray(texCoordAttribute);
+gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
 // Define projection and model-view matrices
 const projectionMatrix = new Float32Array([
