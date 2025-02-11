@@ -144,4 +144,38 @@ function render() {
     requestAnimationFrame(render);
 }
 
+function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
+    const f = 1.0 / Math.tan(fov / 2);
+    return new Float32Array([
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) / (near - far), -1,
+        0, 0, (2 * far * near) / (near - far), 0
+    ]);
+}
+
+function updateProjectionMatrix() {
+    const aspect = canvas.width / canvas.height;
+    const fov = Math.PI / 4; // 45 degrees
+    const near = 0.1;
+    const far = 100.0;
+
+    const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
+
+    const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
+    gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+}
+
+canvas.addEventListener("resize", () => {
+    // Resize the canvas to match window size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    updateProjectionMatrix(); // Recalculate projection matrix
+});
+
+// Initialize projection matrix
+updateProjectionMatrix();
+
 render();
