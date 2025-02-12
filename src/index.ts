@@ -1,5 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
+import { createRenderFunction } from "./render";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -139,17 +140,6 @@ const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix"
 gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 gl.uniformMatrix4fv(modelViewMatrixLocation, false, modelViewMatrix);
 
-// Render function
-function render() {
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
-
-    gl.drawElements(gl.TRIANGLES, sphereData.indices.length, gl.UNSIGNED_SHORT, 0);
-
-    requestAnimationFrame(render);
-}
-
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
     return new Float32Array([
@@ -184,4 +174,4 @@ canvas.addEventListener("resize", () => {
 // Initialize projection matrix
 updateProjectionMatrix();
 
-render();
+createRenderFunction(gl, sphereData)();
