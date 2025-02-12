@@ -1,5 +1,7 @@
+import { SphereData } from "./types";
+
 // Higher-order function to generate a render function with specific WebGL context and parameters
-export function createRenderFunction(gl, sphereData) {
+export function createRenderFunction(gl: WebGLRenderingContext, sphereData: SphereData) {
     // Return the render function
     return function render() {
         gl.clearColor(0, 0, 0, 1);

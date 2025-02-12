@@ -1,4 +1,6 @@
-export function createSphere(radius: number, latitudeBands: number, longitudeBands: number) {
+import { SphereData } from "./types";
+
+export function createSphere(radius: number, latitudeBands: number, longitudeBands: number): SphereData {
     const positions = [];
     const normals = [];
     const texCoords = [];
