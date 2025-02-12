@@ -1,6 +1,6 @@
-import { SphereData } from "./types";
+import { Mesh } from "./types";
 
-export function createSphere(radius: number, latitudeBands: number, longitudeBands: number): SphereData {
+export function createSphere(radius: number, latitudeBands: number, longitudeBands: number): Mesh {
     const positions = [];
     const normals = [];
     const texCoords = [];
