@@ -4,7 +4,7 @@
   "description": "Stars!",
   "main": "index.js",
   "scripts": {
-  "dev": "vite",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -15,6 +15,8 @@
   "author": "Adam C. Reynolds",
   "license": "GPL-3.0-only",
   "dependencies": {
+    "@types/gl-matrix": "^2.4.5",
+    "gl-matrix": "^3.4.3",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
