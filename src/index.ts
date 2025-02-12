@@ -10,9 +10,15 @@ if (!gl) {
     throw new Error("WebGL not supported");
 }
 
-// Resize canvas to fill the screen
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+// Resize canvas to fill the screen
 gl.viewport(0, 0, canvas.width, canvas.height);
 
 // Function to create a shader
