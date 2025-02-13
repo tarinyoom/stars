@@ -11,10 +11,7 @@ if (!gl) {
     throw new Error("WebGL not supported");
 }
 
-window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
+window.addEventListener("resize", onWindowResize);
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -158,10 +155,6 @@ function updateModelViewMatrix(pol: number) {
 
 const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
 
-gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-gl.uniformMatrix4fv(modelViewMatrixLocation, false, makeModelViewMatrix(0.0));
-
-
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
     return new Float32Array([
@@ -183,14 +176,16 @@ function updateProjectionMatrix(width: number, height: number) {
     gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 }
 
-canvas.addEventListener("resize", () => {
+function onWindowResize() {
     // Resize the canvas to match window size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     updateProjectionMatrix(canvas.width, canvas.height); // Recalculate projection matrix
-});
+}
+
+onWindowResize();
 
 // Initialize projection matrix
 updateProjectionMatrix(canvas.width, canvas.height);
