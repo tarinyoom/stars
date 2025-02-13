@@ -1,7 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
 import { mat4, vec3 } from "gl-matrix";
-import { createRenderFunction } from "./render";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -128,6 +127,8 @@ const projectionMatrix = new Float32Array([
     0, 0, -0.2002, 0
 ]);
 
+const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
+
 function makeModelViewMatrix(polar: number): mat4 {
     // Calculate the camera's position based on the polar angle
     const radius = 2; // This is the distance from the origin
@@ -151,12 +152,15 @@ function makeModelViewMatrix(polar: number): mat4 {
     return viewMatrix;
 }
 
+function updateModelViewMatrix(pol: number) {
+    gl.uniformMatrix4fv(modelViewMatrixLocation, false, makeModelViewMatrix(pol));
+}
 
 const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
-const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
 
 gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 gl.uniformMatrix4fv(modelViewMatrixLocation, false, makeModelViewMatrix(0.0));
+
 
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
@@ -176,7 +180,6 @@ function updateProjectionMatrix(width: number, height: number) {
 
     const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
 
-    const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
     gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 }
 
@@ -191,5 +194,24 @@ canvas.addEventListener("resize", () => {
 
 // Initialize projection matrix
 updateProjectionMatrix(canvas.width, canvas.height);
+
+// Higher-order function to generate a render function with specific WebGL context and parameters
+export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
+
+    let pol = 0.0;
+
+    // Return the render function
+    return function render() {
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+    
+        gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
+    
+        requestAnimationFrame(render);
+        updateModelViewMatrix(pol);
+        pol += 0.005;
+    };    
+}
 
 createRenderFunction(gl, sphereData)();
