@@ -1,5 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
+import { mat4, vec3 } from "gl-matrix";
 import { createRenderFunction } from "./render";
 
 // Get the WebGL context
@@ -127,18 +128,35 @@ const projectionMatrix = new Float32Array([
     0, 0, -0.2002, 0
 ]);
 
-const modelViewMatrix = new Float32Array([
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, -2, 1
-]);
+function makeModelViewMatrix(polar: number): mat4 {
+    // Calculate the camera's position based on the polar angle
+    const radius = 2; // This is the distance from the origin
+    const cameraX = radius * Math.sin(polar);
+    const cameraZ = radius * Math.cos(polar);
+    const cameraY = 0; // Assuming you want the camera level with the origin's Y axis
+
+    // Camera position as a ReadonlyVec3
+    const eye = vec3.fromValues(cameraX, cameraY, cameraZ);
+
+    // Target is the origin
+    const center = vec3.fromValues(0, 0, 0);
+
+    // Up vector is typically along the Y-axis
+    const up = vec3.fromValues(0, 1, 0);
+
+    // Create the view matrix using gl-matrix's lookAt function
+    const viewMatrix = mat4.create();
+    mat4.lookAt(viewMatrix, eye, center, up);
+
+    return viewMatrix;
+}
+
 
 const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
 const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
 
 gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-gl.uniformMatrix4fv(modelViewMatrixLocation, false, modelViewMatrix);
+gl.uniformMatrix4fv(modelViewMatrixLocation, false, makeModelViewMatrix(0.0));
 
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
@@ -150,8 +168,8 @@ function perspectiveMatrix(fov: number, aspect: number, near: number, far: numbe
     ]);
 }
 
-function updateProjectionMatrix() {
-    const aspect = canvas.width / canvas.height;
+function updateProjectionMatrix(width: number, height: number) {
+    const aspect = width / height;
     const fov = Math.PI / 4; // 45 degrees
     const near = 0.1;
     const far = 100.0;
@@ -168,10 +186,10 @@ canvas.addEventListener("resize", () => {
     canvas.height = window.innerHeight;
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    updateProjectionMatrix(); // Recalculate projection matrix
+    updateProjectionMatrix(canvas.width, canvas.height); // Recalculate projection matrix
 });
 
 // Initialize projection matrix
-updateProjectionMatrix();
+updateProjectionMatrix(canvas.width, canvas.height);
 
 createRenderFunction(gl, sphereData)();
