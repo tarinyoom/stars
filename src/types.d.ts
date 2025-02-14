@@ -12,5 +12,7 @@ export type Mesh = {
  * Modifiable state of the scene.
  */
 export type SceneParameters = {
+    dragging: boolean;
+    draggingStart: number;
     viewAngle: number;
 };
