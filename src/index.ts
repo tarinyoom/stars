@@ -1,6 +1,7 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
 import { mat4, vec3 } from "gl-matrix";
+import { SceneParameters, Mesh } from "./types";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -190,35 +191,49 @@ onWindowResize();
 // Initialize projection matrix
 updateProjectionMatrix(canvas.width, canvas.height);
 
-let isDragging = false;
-let startX = 0;
+
+function onMouseDown(scene: SceneParameters) {
+    return (e: MouseEvent) => {
+        scene.dragging = true;
+        scene.draggingStart = e.offsetX;
+    }
+}
+
+function onMouseMove(scene: SceneParameters) {
+    return (e: MouseEvent) => {
+        if (scene.dragging) {
+            const currentX = e.offsetX;  // Get the current x-coordinate of the mouse
+            const horizontalMotion = currentX - scene.draggingStart;  // Calculate the horizontal movement
+            updateModelViewMatrix(- horizontalMotion * 0.005);  // Call the function with the horizontal motion value
+        }
+    }
+}
+
+function onMouseUp(scene: SceneParameters) {
+    return () => {
+        scene.dragging = false;
+    };
+}
+
+let scene: SceneParameters = {
+    dragging: false,
+    draggingStart: 0.0,
+    viewAngle: 0.0
+};
 
 // Mouse down event to start the drag
-canvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.offsetX;  // Get the x-coordinate of the mouse when the drag starts
-});
+canvas.addEventListener('mousedown', onMouseDown(scene));
 
 // Mouse move event to track the drag
-canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        const currentX = e.offsetX;  // Get the current x-coordinate of the mouse
-        const horizontalMotion = currentX - startX;  // Calculate the horizontal movement
-        updateModelViewMatrix(- horizontalMotion * 0.005);  // Call the function with the horizontal motion value
-    }
-});
+canvas.addEventListener('mousemove', onMouseMove(scene));
 
 updateModelViewMatrix(0.0);
 
 // Mouse up event to end the drag
-canvas.addEventListener('mouseup', () => {
-    isDragging = false;  // Stop tracking the drag
-});
+canvas.addEventListener('mouseup', onMouseUp(scene));
 
 // Mouse leave event to handle case when mouse leaves the canvas area while dragging
-canvas.addEventListener('mouseleave', () => {
-    isDragging = false;
-});
+canvas.addEventListener('mouseleave', onMouseUp(scene));
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
