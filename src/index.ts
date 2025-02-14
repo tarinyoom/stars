@@ -190,10 +190,38 @@ onWindowResize();
 // Initialize projection matrix
 updateProjectionMatrix(canvas.width, canvas.height);
 
+let isDragging = false;
+let startX = 0;
+
+// Mouse down event to start the drag
+canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.offsetX;  // Get the x-coordinate of the mouse when the drag starts
+});
+
+// Mouse move event to track the drag
+canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        const currentX = e.offsetX;  // Get the current x-coordinate of the mouse
+        const horizontalMotion = currentX - startX;  // Calculate the horizontal movement
+        updateModelViewMatrix(- horizontalMotion * 0.005);  // Call the function with the horizontal motion value
+    }
+});
+
+updateModelViewMatrix(0.0);
+
+// Mouse up event to end the drag
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;  // Stop tracking the drag
+});
+
+// Mouse leave event to handle case when mouse leaves the canvas area while dragging
+canvas.addEventListener('mouseleave', () => {
+    isDragging = false;
+});
+
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
-
-    let pol = 0.0;
 
     // Return the render function
     return function render() {
@@ -204,8 +232,6 @@ export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
     
         requestAnimationFrame(render);
-        updateModelViewMatrix(pol);
-        pol += 0.005;
     };    
 }
 
