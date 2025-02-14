@@ -12,11 +12,6 @@ if (!gl) {
     throw new Error("WebGL not supported");
 }
 
-window.addEventListener("resize", onWindowResize);
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
 // Resize canvas to fill the screen
 gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -177,20 +172,21 @@ function updateProjectionMatrix(width: number, height: number) {
     gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 }
 
-function onWindowResize() {
-    // Resize the canvas to match window size
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-
-    updateProjectionMatrix(canvas.width, canvas.height); // Recalculate projection matrix
+function onWindowResize(gl: WebGLRenderingContext, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        updateProjectionMatrix(canvas.width, canvas.height);
+    }
+    resize();
+    return resize;
 }
 
-onWindowResize();
+window.addEventListener("resize", onWindowResize(gl, canvas, window));
 
 // Initialize projection matrix
 updateProjectionMatrix(canvas.width, canvas.height);
-
 
 function onMouseDown(scene: SceneParameters) {
     return (e: MouseEvent) => {
@@ -202,9 +198,9 @@ function onMouseDown(scene: SceneParameters) {
 function onMouseMove(scene: SceneParameters) {
     return (e: MouseEvent) => {
         if (scene.dragging) {
-            const currentX = e.offsetX;  // Get the current x-coordinate of the mouse
-            const horizontalMotion = currentX - scene.draggingStart;  // Calculate the horizontal movement
-            updateModelViewMatrix(- horizontalMotion * 0.005);  // Call the function with the horizontal motion value
+            const currentX = e.offsetX;
+            const horizontalMotion = currentX - scene.draggingStart;
+            updateModelViewMatrix(- horizontalMotion * 0.005);
         }
     }
 }
@@ -221,19 +217,13 @@ let scene: SceneParameters = {
     viewAngle: 0.0
 };
 
-// Mouse down event to start the drag
 canvas.addEventListener('mousedown', onMouseDown(scene));
-
-// Mouse move event to track the drag
 canvas.addEventListener('mousemove', onMouseMove(scene));
+canvas.addEventListener('mouseup', onMouseUp(scene));
+canvas.addEventListener('mouseleave', onMouseUp(scene));
 
 updateModelViewMatrix(0.0);
 
-// Mouse up event to end the drag
-canvas.addEventListener('mouseup', onMouseUp(scene));
-
-// Mouse leave event to handle case when mouse leaves the canvas area while dragging
-canvas.addEventListener('mouseleave', onMouseUp(scene));
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
