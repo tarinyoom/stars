@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
-import { onMouseDown, onMouseMove, onMouseUp } from "./events";
+import { onMouseDown, onMouseMove, onMouseUp, onWindowResize } from "./events";
 import { SceneParameters, Mesh, Renderer } from "./types";
 
 // Get the WebGL context
@@ -128,53 +128,9 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string): 
 // Generate sphere data
 const sphereData = createSphere(0.5, 30, 30);
 
-
-// Define projection and model-view matrices
-const projectionMatrix = new Float32Array([
-    2.414, 0, 0, 0,
-    0, 2.414, 0, 0,
-    0, 0, -1.002, -1,
-    0, 0, -0.2002, 0
-]);
-
-function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
-    const f = 1.0 / Math.tan(fov / 2);
-    return new Float32Array([
-        f / aspect, 0, 0, 0,
-        0, f, 0, 0,
-        0, 0, (far + near) / (near - far), -1,
-        0, 0, (2 * far * near) / (near - far), 0
-    ]);
-}
-
-function updateProjectionMatrix(r: Renderer, width: number, height: number) {
-    const aspect = width / height;
-    const fov = Math.PI / 4; // 45 degrees
-    const near = 0.1;
-    const far = 100.0;
-
-    const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
-
-    r.gl.uniformMatrix4fv(r.projectionMatrixLocation, false, projectionMatrix);
-}
-
-function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        r.gl.viewport(0, 0, canvas.width, canvas.height);
-        updateProjectionMatrix(r, canvas.width, canvas.height);
-    }
-    resize();
-    return resize;
-}
-
 let r = makeRenderer(gl);
 
 window.addEventListener("resize", onWindowResize(r, canvas, window));
-
-// Initialize projection matrix
-updateProjectionMatrix(r, canvas.width, canvas.height);
 
 let scene: SceneParameters = {
     dragging: false,

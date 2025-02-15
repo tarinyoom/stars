@@ -1,6 +1,38 @@
 import { SceneParameters, Renderer } from "./types";
 import { mat4, vec3 } from "gl-matrix";
 
+function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
+    const f = 1.0 / Math.tan(fov / 2);
+    return new Float32Array([
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) / (near - far), -1,
+        0, 0, (2 * far * near) / (near - far), 0
+    ]);
+}
+
+function updateProjectionMatrix(r: Renderer, width: number, height: number) {
+    const aspect = width / height;
+    const fov = Math.PI / 4; // 45 degrees
+    const near = 0.1;
+    const far = 100.0;
+
+    const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
+
+    r.gl.uniformMatrix4fv(r.projectionMatrixLocation, false, projectionMatrix);
+}
+
+export function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        r.gl.viewport(0, 0, canvas.width, canvas.height);
+        updateProjectionMatrix(r, canvas.width, canvas.height);
+    }
+    resize();
+    return resize;
+}
+
 function makeModelViewMatrix(polar: number): mat4 {
     // Calculate the camera's position based on the polar angle
     const radius = 2; // This is the distance from the origin
