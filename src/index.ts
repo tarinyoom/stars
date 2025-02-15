@@ -1,19 +1,114 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
 import { mat4, vec3 } from "gl-matrix";
-import { SceneParameters, Mesh } from "./types";
+import { SceneParameters, Mesh, Renderer } from "./types";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
-const gl = canvas.getContext("webgl");
 
-if (!gl) {
-    console.error("WebGL not supported");
-    throw new Error("WebGL not supported");
+function makeRenderer(): Renderer {
+    const gl = canvas.getContext("webgl");
+
+    if (!gl) {
+        console.error("WebGL not supported");
+        throw new Error("WebGL not supported");
+    }
+
+    // Resize canvas to fill the screen
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    // Create shaders
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+    // Create shader program
+    const program = gl.createProgram();
+    if (!program) throw new Error("Failed to create program");
+
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(program));
+        throw new Error("Program linking failed");
+    }
+
+    gl.useProgram(program);
+
+    // Light properties
+    const lightDirection = new Float32Array([-0.5, -1.0, -0.5]); // Directional light
+    const lightColor = new Float32Array([1.0, 1.0, 1.0]); // White light
+    const ambientColor = new Float32Array([0.2, 0.2, 0.2]); // Soft ambient lighting
+    const viewPosition = new Float32Array([0.0, 0.0, 3.0]); // Camera position
+
+    // Pass lighting data to shaders
+    const lightDirectionLocation = gl.getUniformLocation(program, "lightDirection");
+    const lightColorLocation = gl.getUniformLocation(program, "lightColor");
+    const ambientColorLocation = gl.getUniformLocation(program, "ambientColor");
+    const viewPositionLocation = gl.getUniformLocation(program, "viewPosition");
+
+    gl.uniform3fv(lightDirectionLocation, lightDirection);
+    gl.uniform3fv(lightColorLocation, lightColor);
+    gl.uniform3fv(ambientColorLocation, ambientColor);
+    gl.uniform3fv(viewPositionLocation, viewPosition);
+
+    // Create and bind a buffer for positions
+    const positionBuffer = gl.createBuffer();
+    if (!positionBuffer) throw new Error("Failed to create position buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sphereData.positions, gl.STATIC_DRAW);
+
+    // Create and bind a buffer for normals
+    const normalBuffer = gl.createBuffer();
+    if (!normalBuffer) throw new Error("Failed to create normal buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sphereData.normals, gl.STATIC_DRAW);
+
+    // Create and bind an element array buffer for indices
+    const indexBuffer = gl.createBuffer();
+    if (!indexBuffer) throw new Error("Failed to create index buffer");
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphereData.indices, gl.STATIC_DRAW);
+
+    // Get attribute locations and enable them
+    const positionAttribute = gl.getAttribLocation(program, "position");
+    gl.enableVertexAttribArray(positionAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+    const normalAttribute = gl.getAttribLocation(program, "normal");
+    gl.enableVertexAttribArray(normalAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
+
+    const texCoordBuffer = gl.createBuffer();
+    if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sphereData.texCoords, gl.STATIC_DRAW);
+
+    const texCoordAttribute = gl.getAttribLocation(program, "texCoord");
+    gl.enableVertexAttribArray(texCoordAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+    const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
+    if (!projectionMatrixLocation) throw new Error("Failed to get projection matrix location");
+
+    const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
+    if (!modelViewMatrixLocation) throw new Error("Failed to get model view matrix location");
+
+    return {
+        gl: gl,
+        program: program,
+        projectionMatrixLocation: projectionMatrixLocation,
+        modelViewMatrixLocation: modelViewMatrixLocation
+    };
 }
-
-// Resize canvas to fill the screen
-gl.viewport(0, 0, canvas.width, canvas.height);
 
 // Function to create a shader
 function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader {
@@ -30,87 +125,9 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string): 
     return shader;
 }
 
-// Create shaders
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-
-// Create shader program
-const program = gl.createProgram();
-if (!program) throw new Error("Failed to create program");
-
-gl.attachShader(program, vertexShader);
-gl.attachShader(program, fragmentShader);
-gl.linkProgram(program);
-
-if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error(gl.getProgramInfoLog(program));
-    throw new Error("Program linking failed");
-}
-
-gl.useProgram(program);
-
-// Light properties
-const lightDirection = new Float32Array([-0.5, -1.0, -0.5]); // Directional light
-const lightColor = new Float32Array([1.0, 1.0, 1.0]); // White light
-const ambientColor = new Float32Array([0.2, 0.2, 0.2]); // Soft ambient lighting
-const viewPosition = new Float32Array([0.0, 0.0, 3.0]); // Camera position
-
-// Pass lighting data to shaders
-const lightDirectionLocation = gl.getUniformLocation(program, "lightDirection");
-const lightColorLocation = gl.getUniformLocation(program, "lightColor");
-const ambientColorLocation = gl.getUniformLocation(program, "ambientColor");
-const viewPositionLocation = gl.getUniformLocation(program, "viewPosition");
-
-gl.uniform3fv(lightDirectionLocation, lightDirection);
-gl.uniform3fv(lightColorLocation, lightColor);
-gl.uniform3fv(ambientColorLocation, ambientColor);
-gl.uniform3fv(viewPositionLocation, viewPosition);
-
 // Generate sphere data
 const sphereData = createSphere(0.5, 30, 30);
 
-// Create and bind a buffer for positions
-const positionBuffer = gl.createBuffer();
-if (!positionBuffer) throw new Error("Failed to create position buffer");
-
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, sphereData.positions, gl.STATIC_DRAW);
-
-// Create and bind a buffer for normals
-const normalBuffer = gl.createBuffer();
-if (!normalBuffer) throw new Error("Failed to create normal buffer");
-
-gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, sphereData.normals, gl.STATIC_DRAW);
-
-// Create and bind an element array buffer for indices
-const indexBuffer = gl.createBuffer();
-if (!indexBuffer) throw new Error("Failed to create index buffer");
-
-gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphereData.indices, gl.STATIC_DRAW);
-
-// Get attribute locations and enable them
-const positionAttribute = gl.getAttribLocation(program, "position");
-gl.enableVertexAttribArray(positionAttribute);
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-const normalAttribute = gl.getAttribLocation(program, "normal");
-gl.enableVertexAttribArray(normalAttribute);
-gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
-
-const texCoordBuffer = gl.createBuffer();
-if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
-
-gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, sphereData.texCoords, gl.STATIC_DRAW);
-
-const texCoordAttribute = gl.getAttribLocation(program, "texCoord");
-gl.enableVertexAttribArray(texCoordAttribute);
-gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
 // Define projection and model-view matrices
 const projectionMatrix = new Float32Array([
@@ -119,8 +136,6 @@ const projectionMatrix = new Float32Array([
     0, 0, -1.002, -1,
     0, 0, -0.2002, 0
 ]);
-
-const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
 
 function makeModelViewMatrix(polar: number): mat4 {
     // Calculate the camera's position based on the polar angle
@@ -145,11 +160,9 @@ function makeModelViewMatrix(polar: number): mat4 {
     return viewMatrix;
 }
 
-function updateModelViewMatrix(pol: number) {
-    gl.uniformMatrix4fv(modelViewMatrixLocation, false, makeModelViewMatrix(pol));
+function updateModelViewMatrix(r: Renderer, pol: number) {
+    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol));
 }
-
-const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
 
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
@@ -161,7 +174,7 @@ function perspectiveMatrix(fov: number, aspect: number, near: number, far: numbe
     ]);
 }
 
-function updateProjectionMatrix(width: number, height: number) {
+function updateProjectionMatrix(r: Renderer, width: number, height: number) {
     const aspect = width / height;
     const fov = Math.PI / 4; // 45 degrees
     const near = 0.1;
@@ -169,24 +182,26 @@ function updateProjectionMatrix(width: number, height: number) {
 
     const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
 
-    gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+    r.gl.uniformMatrix4fv(r.projectionMatrixLocation, false, projectionMatrix);
 }
 
-function onWindowResize(gl: WebGLRenderingContext, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
+function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        updateProjectionMatrix(canvas.width, canvas.height);
+        r.gl.viewport(0, 0, canvas.width, canvas.height);
+        updateProjectionMatrix(r, canvas.width, canvas.height);
     }
     resize();
     return resize;
 }
 
-window.addEventListener("resize", onWindowResize(gl, canvas, window));
+let r = makeRenderer();
+
+window.addEventListener("resize", onWindowResize(r, canvas, window));
 
 // Initialize projection matrix
-updateProjectionMatrix(canvas.width, canvas.height);
+updateProjectionMatrix(r, canvas.width, canvas.height);
 
 function onMouseDown(scene: SceneParameters) {
     return (e: MouseEvent) => {
@@ -195,12 +210,12 @@ function onMouseDown(scene: SceneParameters) {
     }
 }
 
-function onMouseMove(scene: SceneParameters) {
+function onMouseMove(r: Renderer, scene: SceneParameters) {
     return (e: MouseEvent) => {
         if (scene.dragging) {
             const currentX = e.offsetX;
             const horizontalMotion = currentX - scene.draggingStart;
-            updateModelViewMatrix(- horizontalMotion * 0.005);
+            updateModelViewMatrix(r, - horizontalMotion * 0.005);
         }
     }
 }
@@ -218,11 +233,11 @@ let scene: SceneParameters = {
 };
 
 canvas.addEventListener('mousedown', onMouseDown(scene));
-canvas.addEventListener('mousemove', onMouseMove(scene));
+canvas.addEventListener('mousemove', onMouseMove(r, scene));
 canvas.addEventListener('mouseup', onMouseUp(scene));
 canvas.addEventListener('mouseleave', onMouseUp(scene));
 
-updateModelViewMatrix(0.0);
+updateModelViewMatrix(r, 0.0);
 
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
@@ -240,4 +255,4 @@ export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
     };    
 }
 
-createRenderFunction(gl, sphereData)();
+createRenderFunction(r.gl, sphereData)();

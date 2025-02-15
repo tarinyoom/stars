@@ -16,3 +16,13 @@ export type SceneParameters = {
     draggingStart: number;
     viewAngle: number;
 };
+
+/**
+ * Renderer with some precomputed values accessed from rendering context.
+ */
+export type Renderer = {
+    gl: WebGLRenderingContext;
+    program: WebGLProgram;
+    projectionMatrixLocation: WebGLUniformLocation;
+    modelViewMatrixLocation: WebGLUniformLocation;
+};
