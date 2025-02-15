@@ -5,14 +5,14 @@ import { SceneParameters, Mesh, Renderer } from "./types";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
+const gl = canvas.getContext("webgl");
 
-function makeRenderer(): Renderer {
-    const gl = canvas.getContext("webgl");
+if (!gl) {
+    console.error("WebGL not supported");
+    throw new Error("WebGL not supported");
+}
 
-    if (!gl) {
-        console.error("WebGL not supported");
-        throw new Error("WebGL not supported");
-    }
+function makeRenderer(gl: WebGLRenderingContext): Renderer {
 
     // Resize canvas to fill the screen
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -196,7 +196,7 @@ function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: Window &
     return resize;
 }
 
-let r = makeRenderer();
+let r = makeRenderer(gl);
 
 window.addEventListener("resize", onWindowResize(r, canvas, window));
 
