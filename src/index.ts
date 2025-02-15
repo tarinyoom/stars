@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
-import { mat4, vec3 } from "gl-matrix";
+import { onMouseDown, onMouseMove, onMouseUp } from "./events";
 import { SceneParameters, Mesh, Renderer } from "./types";
 
 // Get the WebGL context
@@ -137,33 +137,6 @@ const projectionMatrix = new Float32Array([
     0, 0, -0.2002, 0
 ]);
 
-function makeModelViewMatrix(polar: number): mat4 {
-    // Calculate the camera's position based on the polar angle
-    const radius = 2; // This is the distance from the origin
-    const cameraX = radius * Math.sin(polar);
-    const cameraZ = radius * Math.cos(polar);
-    const cameraY = 0; // Assuming you want the camera level with the origin's Y axis
-
-    // Camera position as a ReadonlyVec3
-    const eye = vec3.fromValues(cameraX, cameraY, cameraZ);
-
-    // Target is the origin
-    const center = vec3.fromValues(0, 0, 0);
-
-    // Up vector is typically along the Y-axis
-    const up = vec3.fromValues(0, 1, 0);
-
-    // Create the view matrix using gl-matrix's lookAt function
-    const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, eye, center, up);
-
-    return viewMatrix;
-}
-
-function updateModelViewMatrix(r: Renderer, pol: number) {
-    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol));
-}
-
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
     return new Float32Array([
@@ -203,29 +176,6 @@ window.addEventListener("resize", onWindowResize(r, canvas, window));
 // Initialize projection matrix
 updateProjectionMatrix(r, canvas.width, canvas.height);
 
-function onMouseDown(scene: SceneParameters) {
-    return (e: MouseEvent) => {
-        scene.dragging = true;
-        scene.draggingStart = e.offsetX;
-    }
-}
-
-function onMouseMove(r: Renderer, scene: SceneParameters) {
-    return (e: MouseEvent) => {
-        if (scene.dragging) {
-            const currentX = e.offsetX;
-            const horizontalMotion = currentX - scene.draggingStart;
-            updateModelViewMatrix(r, - horizontalMotion * 0.005);
-        }
-    }
-}
-
-function onMouseUp(scene: SceneParameters) {
-    return () => {
-        scene.dragging = false;
-    };
-}
-
 let scene: SceneParameters = {
     dragging: false,
     draggingStart: 0.0,
@@ -236,9 +186,6 @@ canvas.addEventListener('mousedown', onMouseDown(scene));
 canvas.addEventListener('mousemove', onMouseMove(r, scene));
 canvas.addEventListener('mouseup', onMouseUp(scene));
 canvas.addEventListener('mouseleave', onMouseUp(scene));
-
-updateModelViewMatrix(r, 0.0);
-
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
