@@ -1,4 +1,4 @@
-export const vertexShaderSource = `
+export const sphereVertexShaderSource = `
 precision mediump float;
 
 attribute vec3 position;
@@ -22,7 +22,7 @@ void main() {
 }
 `;
 
-export const fragmentShaderSource = `
+export const sphereFragmentShaderSource = `
 precision mediump float;
 
 varying vec3 vNormal;

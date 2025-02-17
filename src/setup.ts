@@ -1,4 +1,4 @@
-import { vertexShaderSource, fragmentShaderSource } from "./shaders";
+import { sphereVertexShaderSource, sphereFragmentShaderSource } from "./shaders";
 import { Mesh, Renderer } from "./types";
 
 // Function to create a shader
@@ -19,8 +19,8 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string): 
 export function makeRenderer(gl: WebGLRenderingContext): Renderer {
 
     // Create shaders
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, sphereVertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, sphereFragmentShaderSource);
 
     // Create shader program
     const program = gl.createProgram();
