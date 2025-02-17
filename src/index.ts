@@ -53,49 +53,6 @@ function makeRenderer(gl: WebGLRenderingContext): Renderer {
     gl.uniform3fv(ambientColorLocation, ambientColor);
     gl.uniform3fv(viewPositionLocation, viewPosition);
 
-    // Create and bind a buffer for positions
-    const positionBuffer = gl.createBuffer();
-    if (!positionBuffer) throw new Error("Failed to create position buffer");
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sphereData.positions, gl.STATIC_DRAW);
-
-    // Create and bind a buffer for normals
-    const normalBuffer = gl.createBuffer();
-    if (!normalBuffer) throw new Error("Failed to create normal buffer");
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sphereData.normals, gl.STATIC_DRAW);
-
-    // Create and bind an element array buffer for indices
-    const indexBuffer = gl.createBuffer();
-    if (!indexBuffer) throw new Error("Failed to create index buffer");
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphereData.indices, gl.STATIC_DRAW);
-
-    // Get attribute locations and enable them
-    const positionAttribute = gl.getAttribLocation(program, "position");
-    gl.enableVertexAttribArray(positionAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-    const normalAttribute = gl.getAttribLocation(program, "normal");
-    gl.enableVertexAttribArray(normalAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
-
-    const texCoordBuffer = gl.createBuffer();
-    if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sphereData.texCoords, gl.STATIC_DRAW);
-
-    const texCoordAttribute = gl.getAttribLocation(program, "texCoord");
-    gl.enableVertexAttribArray(texCoordAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-
     const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
     if (!projectionMatrixLocation) throw new Error("Failed to get projection matrix location");
 
@@ -108,6 +65,54 @@ function makeRenderer(gl: WebGLRenderingContext): Renderer {
         projectionMatrixLocation: projectionMatrixLocation,
         modelViewMatrixLocation: modelViewMatrixLocation
     };
+}
+
+function registerMesh(r: Renderer, m: Mesh) {
+
+    let gl = r.gl;
+
+    // Create and bind a buffer for positions
+    const positionBuffer = gl.createBuffer();
+    if (!positionBuffer) throw new Error("Failed to create position buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, m.positions, gl.STATIC_DRAW);
+
+    // Create and bind a buffer for normals
+    const normalBuffer = gl.createBuffer();
+    if (!normalBuffer) throw new Error("Failed to create normal buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, m.normals, gl.STATIC_DRAW);
+
+    // Create and bind an element array buffer for indices
+    const indexBuffer = gl.createBuffer();
+    if (!indexBuffer) throw new Error("Failed to create index buffer");
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.indices, gl.STATIC_DRAW);
+
+    // Get attribute locations and enable them
+    const positionAttribute = gl.getAttribLocation(r.program, "position");
+    gl.enableVertexAttribArray(positionAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+    const normalAttribute = gl.getAttribLocation(r.program, "normal");
+    gl.enableVertexAttribArray(normalAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
+
+    const texCoordBuffer = gl.createBuffer();
+    if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, m.texCoords, gl.STATIC_DRAW);
+
+    const texCoordAttribute = gl.getAttribLocation(r.program, "texCoord");
+    gl.enableVertexAttribArray(texCoordAttribute);
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);    
 }
 
 // Function to create a shader
@@ -124,9 +129,6 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string): 
     }
     return shader;
 }
-
-// Generate sphere data
-const sphereData = createSphere(0.5, 30, 30);
 
 let r = makeRenderer(gl);
 
@@ -158,4 +160,7 @@ export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
     };    
 }
 
-createRenderFunction(r.gl, sphereData)();
+const sphere = createSphere(0.5, 30, 30);
+
+registerMesh(r, sphere);
+createRenderFunction(r.gl, sphere)();
