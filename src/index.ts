@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from "./shaders";
 import { createSphere } from "./createSphere";
-import { onMouseDown, onMouseMove, onMouseUp, onWindowResize } from "./events";
+import { onMouseDown, onMouseMove, onMouseUp, onWindowResize } from "./controls";
 import { SceneParameters, Mesh, Renderer } from "./types";
 
 // Get the WebGL context
