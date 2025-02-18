@@ -1,5 +1,5 @@
 import { createSphere } from "./createSphere";
-import { onMouseDown, onMouseMove, onMouseUp, onWindowResize } from "./controls";
+import { onPointerDown, onPointerMove, onPointerUp, onWindowResize } from "./controls";
 import { SceneParameters, Mesh } from "./types";
 import { makeRenderer, registerMesh } from "./setup";
 
@@ -23,10 +23,10 @@ let scene: SceneParameters = {
 gl.viewport(0, 0, canvas.width, canvas.height);
 
 window.addEventListener("resize", onWindowResize(r, canvas, window));
-canvas.addEventListener('mousedown', onMouseDown(scene));
-canvas.addEventListener('mousemove', onMouseMove(r, scene));
-canvas.addEventListener('mouseup', onMouseUp(scene));
-canvas.addEventListener('mouseleave', onMouseUp(scene));
+canvas.addEventListener('pointerdown', onPointerDown(scene));
+canvas.addEventListener('pointermove', onPointerMove(r, scene));
+canvas.addEventListener('pointerup', onPointerUp(scene));
+canvas.addEventListener('pointerleave', onPointerUp(scene));
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {

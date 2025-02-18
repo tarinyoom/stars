@@ -60,16 +60,16 @@ function updateModelViewMatrix(r: Renderer, pol: number) {
     r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol));
 }
 
-export function onMouseDown(scene: SceneParameters) {
-    return (e: MouseEvent) => {
+export function onPointerDown(scene: SceneParameters) {
+    return (e: PointerEvent) => {
         scene.dragging = true;
         scene.draggingStart = e.offsetX;
     }
 }
 
-export function onMouseMove(r: Renderer, scene: SceneParameters) {
+export function onPointerMove(r: Renderer, scene: SceneParameters) {
     updateModelViewMatrix(r, 0.0);
-    return (e: MouseEvent) => {
+    return (e: PointerEvent) => {
         if (scene.dragging) {
             const currentX = e.offsetX;
             const horizontalMotion = currentX - scene.draggingStart;
@@ -78,7 +78,7 @@ export function onMouseMove(r: Renderer, scene: SceneParameters) {
     }
 }
 
-export function onMouseUp(scene: SceneParameters) {
+export function onPointerUp(scene: SceneParameters) {
     return () => {
         scene.dragging = false;
     };
