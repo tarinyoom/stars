@@ -74,7 +74,9 @@ export function onPointerMove(r: Renderer, scene: SceneParameters) {
         if (scene.dragging) {
             const currentX = e.offsetX;
             const horizontalMotion = currentX - scene.draggingStart;
-            updateModelViewMatrix(r, - horizontalMotion * 0.005);
+            scene.draggingStart = currentX;
+            scene.viewAngle -= horizontalMotion * 0.005;
+            updateModelViewMatrix(r, scene.viewAngle);
         }
     }
 }
