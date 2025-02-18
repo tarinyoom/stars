@@ -18,7 +18,6 @@ let scene: SceneParameters = {
     draggingStart: 0.0,
     viewAngle: 0.0
 };
-const sphere = createSphere(0.5, 30, 30);
 
 // Resize canvas to fill the screen
 gl.viewport(0, 0, canvas.width, canvas.height);
@@ -30,19 +29,25 @@ canvas.addEventListener('mouseup', onMouseUp(scene));
 canvas.addEventListener('mouseleave', onMouseUp(scene));
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
-export function createRenderFunction(gl: WebGL2RenderingContext, sphere: Mesh) {
+export function createRenderFunction(gl: WebGL2RenderingContext) {
+
+    const sphere = createSphere(0.5, 30, 30);
+    let sphereVAO = registerMesh(r, sphere);
 
     // Return the render function
     return function render() {
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
+
+        gl.bindVertexArray(sphereVAO);
     
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
+
+        gl.bindVertexArray(null);
     
         requestAnimationFrame(render);
     };    
 }
 
-registerMesh(r, sphere);
-createRenderFunction(r.gl, sphere)();
+createRenderFunction(r.gl)();

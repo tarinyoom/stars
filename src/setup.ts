@@ -68,11 +68,16 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
     };
 }
 
-export function registerMesh(r: Renderer, m: Mesh) {
+export function registerMesh(r: Renderer, m: Mesh): WebGLVertexArrayObject {
 
     let gl = r.gl;
 
-    // Step 1: Create all buffers first
+    // Step 1: Create and bind the VAO
+    const vao = gl.createVertexArray();
+    if (!vao) throw new Error("Failed to create VAO");
+    gl.bindVertexArray(vao);
+
+    // Step 2: Create buffers
     const positionBuffer = gl.createBuffer();
     if (!positionBuffer) throw new Error("Failed to create position buffer");
 
@@ -85,7 +90,7 @@ export function registerMesh(r: Renderer, m: Mesh) {
     const indexBuffer = gl.createBuffer();
     if (!indexBuffer) throw new Error("Failed to create index buffer");
 
-    // Step 2: Upload data to buffers
+    // Step 3: Bind buffers and upload data
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, m.positions, gl.STATIC_DRAW);
 
@@ -98,19 +103,24 @@ export function registerMesh(r: Renderer, m: Mesh) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.indices, gl.STATIC_DRAW);
 
-    // Step 3: Get attribute locations and enable them
+    // Step 4: Get attribute locations and enable them
     const positionAttribute = gl.getAttribLocation(r.program, "position");
-    gl.enableVertexAttribArray(positionAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.enableVertexAttribArray(positionAttribute);
     gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
 
     const normalAttribute = gl.getAttribLocation(r.program, "normal");
-    gl.enableVertexAttribArray(normalAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.enableVertexAttribArray(normalAttribute);
     gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
 
     const texCoordAttribute = gl.getAttribLocation(r.program, "texCoord");
-    gl.enableVertexAttribArray(texCoordAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.enableVertexAttribArray(texCoordAttribute);
     gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+    // Step 5: Unbind VAO to prevent unintended modifications
+    gl.bindVertexArray(null);
+
+    return vao;
 }
