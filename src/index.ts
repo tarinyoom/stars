@@ -31,8 +31,11 @@ canvas.addEventListener('mouseleave', onMouseUp(scene));
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
-    const sphere = createSphere(0.5, 30, 30);
+    const sphere = createSphere(0.5, 30, 30, 0);
     let sphereVAO = registerMesh(r, sphere);
+
+    const sphere2 = createSphere(0.1, 10, 10, 1.0);
+    let sphereVAO2 = registerMesh(r, sphere2);
 
     // Return the render function
     return function render() {
@@ -41,8 +44,10 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.enable(gl.DEPTH_TEST);
 
         gl.bindVertexArray(sphereVAO);
-    
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
+
+        gl.bindVertexArray(sphereVAO2);
+        gl.drawElements(gl.TRIANGLES, sphere2.indices.length, gl.UNSIGNED_SHORT, 0);
 
         gl.bindVertexArray(null);
     

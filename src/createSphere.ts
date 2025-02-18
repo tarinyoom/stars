@@ -1,6 +1,6 @@
 import { Mesh } from "./types";
 
-export function createSphere(radius: number, latitudeBands: number, longitudeBands: number): Mesh {
+export function createSphere(radius: number, latitudeBands: number, longitudeBands: number, xOffset: number): Mesh {
     const positions = [];
     const normals = [];
     const texCoords = [];
@@ -23,7 +23,7 @@ export function createSphere(radius: number, latitudeBands: number, longitudeBan
             const u = lon / longitudeBands; // Generate UV coordinates
             const v = lat / latitudeBands;
 
-            positions.push(radius * x, radius * y, radius * z);
+            positions.push(radius * x + xOffset, radius * y, radius * z);
             normals.push(x, y, z);
             texCoords.push(u, 1 - v); // Flip V coordinate
         }
