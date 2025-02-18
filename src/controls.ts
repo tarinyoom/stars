@@ -70,6 +70,7 @@ export function onPointerDown(scene: SceneParameters) {
 export function onPointerMove(r: Renderer, scene: SceneParameters) {
     updateModelViewMatrix(r, 0.0);
     return (e: PointerEvent) => {
+        e.preventDefault();
         if (scene.dragging) {
             const currentX = e.offsetX;
             const horizontalMotion = currentX - scene.draggingStart;

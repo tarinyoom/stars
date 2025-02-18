@@ -24,7 +24,7 @@ gl.viewport(0, 0, canvas.width, canvas.height);
 
 window.addEventListener("resize", onWindowResize(r, canvas, window));
 canvas.addEventListener('pointerdown', onPointerDown(scene));
-canvas.addEventListener('pointermove', onPointerMove(r, scene));
+canvas.addEventListener('pointermove', onPointerMove(r, scene), { passive: false });
 canvas.addEventListener('pointerup', onPointerUp(scene));
 canvas.addEventListener('pointerleave', onPointerUp(scene));
 
