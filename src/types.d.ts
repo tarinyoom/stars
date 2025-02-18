@@ -21,7 +21,7 @@ export type SceneParameters = {
  * Renderer with some precomputed values accessed from rendering context.
  */
 export type Renderer = {
-    gl: WebGLRenderingContext;
+    gl: WebGL2RenderingContext;
     program: WebGLProgram;
     projectionMatrixLocation: WebGLUniformLocation;
     modelViewMatrixLocation: WebGLUniformLocation;

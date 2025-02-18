@@ -5,11 +5,11 @@ import { makeRenderer, registerMesh } from "./setup";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
-const gl = canvas.getContext("webgl");
+const gl = canvas.getContext("webgl2");
 
 if (!gl) {
-    console.error("WebGL not supported");
-    throw new Error("WebGL not supported");
+    console.error("WebGL 2.0 not supported");
+    throw new Error("WebGL 2.0 not supported");
 }
 
 let r = makeRenderer(gl);
@@ -30,7 +30,7 @@ canvas.addEventListener('mouseup', onMouseUp(scene));
 canvas.addEventListener('mouseleave', onMouseUp(scene));
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
-export function createRenderFunction(gl: WebGLRenderingContext, sphere: Mesh) {
+export function createRenderFunction(gl: WebGL2RenderingContext, sphere: Mesh) {
 
     // Return the render function
     return function render() {
