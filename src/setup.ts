@@ -72,28 +72,33 @@ export function registerMesh(r: Renderer, m: Mesh) {
 
     let gl = r.gl;
 
-    // Create and bind a buffer for positions
+    // Step 1: Create all buffers first
     const positionBuffer = gl.createBuffer();
     if (!positionBuffer) throw new Error("Failed to create position buffer");
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, m.positions, gl.STATIC_DRAW);
-
-    // Create and bind a buffer for normals
     const normalBuffer = gl.createBuffer();
     if (!normalBuffer) throw new Error("Failed to create normal buffer");
+
+    const texCoordBuffer = gl.createBuffer();
+    if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
+
+    const indexBuffer = gl.createBuffer();
+    if (!indexBuffer) throw new Error("Failed to create index buffer");
+
+    // Step 2: Upload data to buffers
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, m.positions, gl.STATIC_DRAW);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, m.normals, gl.STATIC_DRAW);
 
-    // Create and bind an element array buffer for indices
-    const indexBuffer = gl.createBuffer();
-    if (!indexBuffer) throw new Error("Failed to create index buffer");
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, m.texCoords, gl.STATIC_DRAW);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.indices, gl.STATIC_DRAW);
 
-    // Get attribute locations and enable them
+    // Step 3: Get attribute locations and enable them
     const positionAttribute = gl.getAttribLocation(r.program, "position");
     gl.enableVertexAttribArray(positionAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -104,14 +109,8 @@ export function registerMesh(r: Renderer, m: Mesh) {
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
 
-    const texCoordBuffer = gl.createBuffer();
-    if (!texCoordBuffer) throw new Error("Failed to create texture buffer");
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, m.texCoords, gl.STATIC_DRAW);
-
     const texCoordAttribute = gl.getAttribLocation(r.program, "texCoord");
     gl.enableVertexAttribArray(texCoordAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);    
+    gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 }
