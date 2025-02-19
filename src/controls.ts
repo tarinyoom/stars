@@ -1,5 +1,5 @@
 import { SceneParameters, Renderer } from "./types";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3, quat } from "gl-matrix";
 
 function perspectiveMatrix(fov: number, aspect: number, near: number, far: number) {
     const f = 1.0 / Math.tan(fov / 2);
@@ -33,6 +33,25 @@ export function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: W
     return resize;
 }
 
+function getModelViewMatrix(cameraQuat: quat) {
+    let viewMatrix = mat4.create(); // Identity matrix
+    let rotationMatrix = mat4.create();
+    
+    // Convert quaternion to rotation matrix
+    mat4.fromQuat(rotationMatrix, cameraQuat);
+
+    // Define camera position (2.0 units along local Z)
+    let cameraPosition = vec3.fromValues(0, 0, 2);
+    
+    // Rotate camera position using the rotation matrix
+    vec3.transformMat4(cameraPosition, cameraPosition, rotationMatrix);
+    
+    // Compute view matrix using LookAt
+    mat4.lookAt(viewMatrix, cameraPosition, [0, 0, 0], [0, 1, 0]);
+
+    return viewMatrix;
+}
+
 function makeModelViewMatrix(polar: number, azimuthal: number): mat4 {
     // Calculate the camera's position based on the polar angle
     const radius = 2; // This is the distance from the origin
@@ -56,8 +75,8 @@ function makeModelViewMatrix(polar: number, azimuthal: number): mat4 {
     return viewMatrix;
 }
 
-function updateModelViewMatrix(r: Renderer, pol: number, az: number) {
-    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol, az));
+function updateModelViewMatrix(r: Renderer, q: quat) {
+    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, getModelViewMatrix(q));
 }
 
 export function onPointerDown(scene: SceneParameters) {
@@ -68,8 +87,20 @@ export function onPointerDown(scene: SceneParameters) {
     }
 }
 
+function yawQuaternion(yawDelta: number) {
+    let qYaw = quat.create();
+    quat.setAxisAngle(qYaw, [0, 1, 0], yawDelta); // Yaw rotation around Y-axis
+    return qYaw;
+}
+
+function pitchQuaternion(pitchDelta: number) {
+    let qPitch = quat.create();
+    quat.setAxisAngle(qPitch, [1, 0, 0], pitchDelta); // Pitch rotation around X-axis
+    return qPitch;
+}
+
 export function onPointerMove(r: Renderer, scene: SceneParameters) {
-    updateModelViewMatrix(r, scene.polarViewAngle, scene.azimuthalViewAngle);
+    updateModelViewMatrix(r, scene.cameraAngle);
     return (e: PointerEvent) => {
         e.preventDefault();
         if (scene.dragging) {
@@ -79,9 +110,9 @@ export function onPointerMove(r: Renderer, scene: SceneParameters) {
             const verticalMotion = currentY - scene.draggingStartY;
             scene.draggingStartX = currentX;
             scene.draggingStartY = currentY;
-            scene.azimuthalViewAngle -= horizontalMotion * 0.005;
-            scene.polarViewAngle -= verticalMotion * 0.005;
-            updateModelViewMatrix(r, scene.polarViewAngle, scene.azimuthalViewAngle);
+            quat.multiply(scene.cameraAngle, scene.cameraAngle, yawQuaternion(horizontalMotion * 0.005));
+            quat.multiply(scene.cameraAngle, scene.cameraAngle, pitchQuaternion(verticalMotion * 0.005));
+            updateModelViewMatrix(r, scene.cameraAngle);
         }
     }
 }

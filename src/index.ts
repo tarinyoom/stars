@@ -2,6 +2,7 @@ import { createSphere } from "./createSphere";
 import { onPointerDown, onPointerMove, onPointerUp, onWindowResize } from "./controls";
 import { SceneParameters, Mesh } from "./types";
 import { makeRenderer, registerMesh } from "./setup";
+import { quat } from "gl-matrix";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -18,7 +19,8 @@ let scene: SceneParameters = {
     draggingStartX: 0.0,
     draggingStartY: 0.0,
     azimuthalViewAngle: 0.0,
-    polarViewAngle: 1.0
+    polarViewAngle: 1.0,
+    cameraAngle: quat.create()
 };
 
 // Resize canvas to fill the screen
