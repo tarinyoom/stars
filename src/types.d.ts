@@ -1,3 +1,5 @@
+import { quat } from "gl-matrix";
+
 /**
  * Geometry and texture mapping for a 2D surface mesh.
  */
@@ -17,6 +19,7 @@ export type SceneParameters = {
     draggingStartY: number;
     polarViewAngle: number;
     azimuthalViewAngle: number;
+    cameraAngle: quat;
 };
 
 /**
