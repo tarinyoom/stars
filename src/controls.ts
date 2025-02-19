@@ -33,12 +33,12 @@ export function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: W
     return resize;
 }
 
-function makeModelViewMatrix(polar: number): mat4 {
+function makeModelViewMatrix(polar: number, azimuthal: number): mat4 {
     // Calculate the camera's position based on the polar angle
     const radius = 2; // This is the distance from the origin
-    const cameraX = radius * Math.sin(polar);
-    const cameraZ = radius * Math.cos(polar);
-    const cameraY = 0; // Assuming you want the camera level with the origin's Y axis
+    const cameraX = radius * Math.sin(polar) * Math.cos(azimuthal);
+    const cameraZ = radius * Math.sin(polar) * Math.sin(azimuthal);
+    const cameraY = radius * Math.cos(polar);
 
     // Camera position as a ReadonlyVec3
     const eye = vec3.fromValues(cameraX, cameraY, cameraZ);
@@ -56,8 +56,8 @@ function makeModelViewMatrix(polar: number): mat4 {
     return viewMatrix;
 }
 
-function updateModelViewMatrix(r: Renderer, pol: number) {
-    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol));
+function updateModelViewMatrix(r: Renderer, pol: number, az: number) {
+    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, makeModelViewMatrix(pol, az));
 }
 
 export function onPointerDown(scene: SceneParameters) {
@@ -68,7 +68,7 @@ export function onPointerDown(scene: SceneParameters) {
 }
 
 export function onPointerMove(r: Renderer, scene: SceneParameters) {
-    updateModelViewMatrix(r, 0.0);
+    updateModelViewMatrix(r, 0.0, 0.0);
     return (e: PointerEvent) => {
         e.preventDefault();
         if (scene.dragging) {
@@ -76,7 +76,7 @@ export function onPointerMove(r: Renderer, scene: SceneParameters) {
             const horizontalMotion = currentX - scene.draggingStart;
             scene.draggingStart = currentX;
             scene.viewAngle -= horizontalMotion * 0.005;
-            updateModelViewMatrix(r, scene.viewAngle);
+            updateModelViewMatrix(r, 20.0, scene.viewAngle);
         }
     }
 }
