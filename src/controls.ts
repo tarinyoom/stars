@@ -36,8 +36,8 @@ export function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: W
 function makeModelViewMatrix(polar: number, azimuthal: number): mat4 {
     // Calculate the camera's position based on the polar angle
     const radius = 2; // This is the distance from the origin
-    const cameraX = radius * Math.sin(polar) * Math.cos(azimuthal);
-    const cameraZ = radius * Math.sin(polar) * Math.sin(azimuthal);
+    const cameraX = radius * Math.sin(polar) * Math.sin(azimuthal);
+    const cameraZ = radius * Math.sin(polar) * Math.cos(azimuthal);
     const cameraY = radius * Math.cos(polar);
 
     // Camera position as a ReadonlyVec3
@@ -63,20 +63,25 @@ function updateModelViewMatrix(r: Renderer, pol: number, az: number) {
 export function onPointerDown(scene: SceneParameters) {
     return (e: PointerEvent) => {
         scene.dragging = true;
-        scene.draggingStart = e.offsetX;
+        scene.draggingStartX = e.offsetX;
+        scene.draggingStartY = e.offsetY;
     }
 }
 
 export function onPointerMove(r: Renderer, scene: SceneParameters) {
-    updateModelViewMatrix(r, 0.0, 0.0);
+    updateModelViewMatrix(r, scene.polarViewAngle, scene.azimuthalViewAngle);
     return (e: PointerEvent) => {
         e.preventDefault();
         if (scene.dragging) {
             const currentX = e.offsetX;
-            const horizontalMotion = currentX - scene.draggingStart;
-            scene.draggingStart = currentX;
-            scene.viewAngle -= horizontalMotion * 0.005;
-            updateModelViewMatrix(r, 20.0, scene.viewAngle);
+            const currentY = e.offsetY;
+            const horizontalMotion = currentX - scene.draggingStartX;
+            const verticalMotion = currentY - scene.draggingStartY;
+            scene.draggingStartX = currentX;
+            scene.draggingStartY = currentY;
+            scene.azimuthalViewAngle -= horizontalMotion * 0.005;
+            scene.polarViewAngle -= verticalMotion * 0.005;
+            updateModelViewMatrix(r, scene.polarViewAngle, scene.azimuthalViewAngle);
         }
     }
 }

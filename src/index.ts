@@ -15,8 +15,10 @@ if (!gl) {
 let r = makeRenderer(gl);
 let scene: SceneParameters = {
     dragging: false,
-    draggingStart: 0.0,
-    viewAngle: 0.0
+    draggingStartX: 0.0,
+    draggingStartY: 0.0,
+    azimuthalViewAngle: 0.0,
+    polarViewAngle: 1.0
 };
 
 // Resize canvas to fill the screen

@@ -13,8 +13,10 @@ export type Mesh = {
  */
 export type SceneParameters = {
     dragging: boolean;
-    draggingStart: number;
-    viewAngle: number;
+    draggingStartX: number;
+    draggingStartY: number;
+    polarViewAngle: number;
+    azimuthalViewAngle: number;
 };
 
 /**
