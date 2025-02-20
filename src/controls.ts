@@ -52,29 +52,6 @@ function getModelViewMatrix(cameraQuat: quat) {
     return viewMatrix;
 }
 
-function makeModelViewMatrix(polar: number, azimuthal: number): mat4 {
-    // Calculate the camera's position based on the polar angle
-    const radius = 2; // This is the distance from the origin
-    const cameraX = radius * Math.sin(polar) * Math.sin(azimuthal);
-    const cameraZ = radius * Math.sin(polar) * Math.cos(azimuthal);
-    const cameraY = radius * Math.cos(polar);
-
-    // Camera position as a ReadonlyVec3
-    const eye = vec3.fromValues(cameraX, cameraY, cameraZ);
-
-    // Target is the origin
-    const center = vec3.fromValues(0, 0, 0);
-
-    // Up vector is typically along the Y-axis
-    const up = vec3.fromValues(0, 1, 0);
-
-    // Create the view matrix using gl-matrix's lookAt function
-    const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, eye, center, up);
-
-    return viewMatrix;
-}
-
 function updateModelViewMatrix(r: Renderer, q: quat) {
     r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, getModelViewMatrix(q));
 }
