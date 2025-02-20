@@ -141,7 +141,7 @@ export function onTouchMove(r: Renderer, scene: SceneParameters) {
     return (e: TouchEvent) => {
         e.preventDefault();
         const touch = e.touches[0];
-        moveCamera(r, scene, touch.pageX, touch.pageY);
+        moveCamera(r, scene, -touch.pageX, -touch.pageY);
     }
 }
 
