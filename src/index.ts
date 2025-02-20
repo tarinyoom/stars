@@ -1,5 +1,5 @@
 import { createSphere } from "./createSphere";
-import { onMouseDown, onMouseMove, onMouseUp, onTouchDown, onTouchMove, onTouchUp, onWindowResize } from "./controls";
+import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
 import { makeRenderer, registerMesh } from "./setup";
 import { quat } from "gl-matrix";
@@ -33,7 +33,7 @@ canvas.addEventListener('mousemove', onMouseMove(r, scene), { passive: false });
 canvas.addEventListener('mouseup', onMouseUp(scene), { passive: false });
 canvas.addEventListener('mouseleave', onMouseUp(scene), { passive: false });
 
-canvas.addEventListener('touchdown', onTouchDown(scene), { passive: false });
+canvas.addEventListener('touchstart', onTouchStart(scene), { passive: false });
 canvas.addEventListener('touchmove', onTouchMove(r, scene), { passive: false });
 canvas.addEventListener('touchup', onTouchUp(scene), { passive: false });
 canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });

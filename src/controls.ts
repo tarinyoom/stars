@@ -121,7 +121,7 @@ export function onMouseDown(scene: SceneParameters) {
     }
 }
 
-export function onTouchDown(scene: SceneParameters) {
+export function onTouchStart(scene: SceneParameters) {
     return (e: TouchEvent) => {
         e.preventDefault();
         const touch = e.touches[0];
@@ -141,7 +141,7 @@ export function onTouchMove(r: Renderer, scene: SceneParameters) {
     return (e: TouchEvent) => {
         e.preventDefault();
         const touch = e.touches[0];
-        moveCamera(r, scene, touch.pageX * 1000, touch.pageY * 1000);
+        moveCamera(r, scene, touch.pageX, touch.pageY);
     }
 }
 
