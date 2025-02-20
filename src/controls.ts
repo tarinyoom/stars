@@ -102,7 +102,7 @@ export function onTouchStart(scene: SceneParameters) {
     return (e: TouchEvent) => {
         e.preventDefault();
         const touch = e.touches[0];
-        startDragging(scene, touch.pageX, touch.pageY);
+        startDragging(scene, -touch.pageX, -touch.pageY);
     }
 }
 
