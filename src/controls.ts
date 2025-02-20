@@ -85,20 +85,6 @@ function startDragging(scene: SceneParameters, offsetX: number, offsetY: number)
     scene.draggingStartY = offsetY;
 }
 
-export function onMouseDown(scene: SceneParameters) {
-    return (e: MouseEvent) => {
-        startDragging(scene, e.offsetX, e.offsetY);
-    }
-}
-
-export function onTouchDown(scene: SceneParameters) {
-    return (e: TouchEvent) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        startDragging(scene, touch.pageX, touch.pageY);
-    }
-}
-
 function yawQuaternion(yawDelta: number) {
     let qYaw = quat.create();
     quat.setAxisAngle(qYaw, [0, 1, 0], yawDelta); // Yaw rotation around Y-axis
@@ -125,6 +111,24 @@ function moveCamera(r: Renderer, scene: SceneParameters, offsetX: number, offset
     }
 }
 
+function stopDragging(scene: SceneParameters) {
+    scene.dragging = false;
+}
+
+export function onMouseDown(scene: SceneParameters) {
+    return (e: MouseEvent) => {
+        startDragging(scene, e.offsetX, e.offsetY);
+    }
+}
+
+export function onTouchDown(scene: SceneParameters) {
+    return (e: TouchEvent) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        startDragging(scene, touch.pageX, touch.pageY);
+    }
+}
+
 export function onMouseMove(r: Renderer, scene: SceneParameters) {
     updateModelViewMatrix(r, scene.cameraAngle);
     return (e: MouseEvent) => {
@@ -137,12 +141,8 @@ export function onTouchMove(r: Renderer, scene: SceneParameters) {
     return (e: TouchEvent) => {
         e.preventDefault();
         const touch = e.touches[0];
-        moveCamera(r, scene, touch.pageX, touch.pageY);
+        moveCamera(r, scene, touch.pageX * 1000, touch.pageY * 1000);
     }
-}
-
-function stopDragging(scene: SceneParameters) {
-    scene.dragging = false;
 }
 
 export function onMouseUp(scene: SceneParameters) {
