@@ -79,11 +79,23 @@ function updateModelViewMatrix(r: Renderer, q: quat) {
     r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, getModelViewMatrix(q));
 }
 
-export function onPointerDown(scene: SceneParameters) {
-    return (e: PointerEvent) => {
-        scene.dragging = true;
-        scene.draggingStartX = e.offsetX;
-        scene.draggingStartY = e.offsetY;
+function startDragging(scene: SceneParameters, offsetX: number, offsetY: number) {
+    scene.dragging = true;
+    scene.draggingStartX = offsetX;
+    scene.draggingStartY = offsetY;
+}
+
+export function onMouseDown(scene: SceneParameters) {
+    return (e: MouseEvent) => {
+        startDragging(scene, e.offsetX, e.offsetY);
+    }
+}
+
+export function onTouchDown(scene: SceneParameters) {
+    return (e: TouchEvent) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        startDragging(scene, touch.pageX, touch.pageY);
     }
 }
 
@@ -99,26 +111,48 @@ function pitchQuaternion(pitchDelta: number) {
     return qPitch;
 }
 
-export function onPointerMove(r: Renderer, scene: SceneParameters) {
-    updateModelViewMatrix(r, scene.cameraAngle);
-    return (e: PointerEvent) => {
-        e.preventDefault();
-        if (scene.dragging) {
-            const currentX = e.offsetX;
-            const currentY = e.offsetY;
-            const horizontalMotion = currentX - scene.draggingStartX;
-            const verticalMotion = currentY - scene.draggingStartY;
-            scene.draggingStartX = currentX;
-            scene.draggingStartY = currentY;
-            quat.multiply(scene.cameraAngle, scene.cameraAngle, yawQuaternion(horizontalMotion * 0.005));
-            quat.multiply(scene.cameraAngle, scene.cameraAngle, pitchQuaternion(verticalMotion * 0.005));
-            updateModelViewMatrix(r, scene.cameraAngle);
-        }
+function moveCamera(r: Renderer, scene: SceneParameters, offsetX: number, offsetY: number) {
+    if (scene.dragging) {
+        const currentX = offsetX;
+        const currentY = offsetY;
+        const horizontalMotion = currentX - scene.draggingStartX;
+        const verticalMotion = currentY - scene.draggingStartY;
+        scene.draggingStartX = currentX;
+        scene.draggingStartY = currentY;
+        quat.multiply(scene.cameraAngle, scene.cameraAngle, yawQuaternion(horizontalMotion * 0.005));
+        quat.multiply(scene.cameraAngle, scene.cameraAngle, pitchQuaternion(verticalMotion * 0.005));
+        updateModelViewMatrix(r, scene.cameraAngle);
     }
 }
 
-export function onPointerUp(scene: SceneParameters) {
+export function onMouseMove(r: Renderer, scene: SceneParameters) {
+    updateModelViewMatrix(r, scene.cameraAngle);
+    return (e: MouseEvent) => {
+        moveCamera(r, scene, e.offsetX, e.offsetY);
+    }
+}
+
+export function onTouchMove(r: Renderer, scene: SceneParameters) {
+    updateModelViewMatrix(r, scene.cameraAngle);
+    return (e: TouchEvent) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        moveCamera(r, scene, touch.pageX, touch.pageY);
+    }
+}
+
+function stopDragging(scene: SceneParameters) {
+    scene.dragging = false;
+}
+
+export function onMouseUp(scene: SceneParameters) {
     return () => {
-        scene.dragging = false;
+        stopDragging(scene);
     };
+}
+
+export function onTouchUp(scene: SceneParameters) {
+    return () => {
+        stopDragging(scene);
+    }
 }

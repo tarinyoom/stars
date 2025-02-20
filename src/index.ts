@@ -1,6 +1,6 @@
 import { createSphere } from "./createSphere";
-import { onPointerDown, onPointerMove, onPointerUp, onWindowResize } from "./controls";
-import { SceneParameters, Mesh } from "./types";
+import { onMouseDown, onMouseMove, onMouseUp, onTouchDown, onTouchMove, onTouchUp, onWindowResize } from "./controls";
+import { SceneParameters } from "./types";
 import { makeRenderer, registerMesh } from "./setup";
 import { quat } from "gl-matrix";
 
@@ -27,10 +27,16 @@ let scene: SceneParameters = {
 gl.viewport(0, 0, canvas.width, canvas.height);
 
 window.addEventListener("resize", onWindowResize(r, canvas, window));
-canvas.addEventListener('pointerdown', onPointerDown(scene));
-canvas.addEventListener('pointermove', onPointerMove(r, scene), { passive: false });
-canvas.addEventListener('pointerup', onPointerUp(scene));
-canvas.addEventListener('pointerleave', onPointerUp(scene));
+
+canvas.addEventListener('mousedown', onMouseDown(scene), { passive: false });
+canvas.addEventListener('mousemove', onMouseMove(r, scene), { passive: false });
+canvas.addEventListener('mouseup', onMouseUp(scene), { passive: false });
+canvas.addEventListener('mouseleave', onMouseUp(scene), { passive: false });
+
+canvas.addEventListener('touchdown', onTouchDown(scene), { passive: false });
+canvas.addEventListener('touchmove', onTouchMove(r, scene), { passive: false });
+canvas.addEventListener('touchup', onTouchUp(scene), { passive: false });
+canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });
 
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
