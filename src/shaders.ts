@@ -61,3 +61,35 @@ void main() {
     gl_FragColor = vec4(finalColor, 1.0);
 }
 `;
+
+export const bgVertexShaderSource = `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 position;
+out vec2 uv;
+
+void main() {
+    uv = position * 0.5 + 0.5; // Convert from clip space (-1,1) to UV space (0,1)
+    gl_Position = vec4(position, 0.0, 1.0);
+}
+`;
+
+export const bgFragmentShaderSource = `#version 300 es
+precision highp float;
+
+in vec2 uv;
+out vec4 fragColor;
+
+// Converts HSV to RGB (rainbow-like gradient)
+vec3 hsv2rgb(float h, float s, float v) {
+    float r = abs(h * 6.0 - 3.0) - 1.0;
+    float g = 2.0 - abs(h * 6.0 - 2.0);
+    float b = 2.0 - abs(h * 6.0 - 4.0);
+    return v * mix(vec3(1.0), clamp(vec3(r, g, b), 0.0, 1.0), s);
+}
+
+void main() {
+    float hue = mod(uv.x * 3.0 + uv.y * 2.0, 1.0); // Procedural rainbow
+    vec3 color = hsv2rgb(hue, 1.0, 1.0);
+    fragColor = vec4(color, 1.0);
+}
+`;

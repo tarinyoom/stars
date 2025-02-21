@@ -1,7 +1,7 @@
 import { createSphere } from "./createSphere";
 import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
-import { makeRenderer, registerMesh } from "./setup";
+import { makeRenderer, registerBackground, registerMesh } from "./setup";
 import { quat } from "gl-matrix";
 
 // Get the WebGL context
@@ -41,6 +41,8 @@ canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
+    let bgVAO = registerBackground(r);
+
     const sphere = createSphere(0.5, 30, 30, 0);
     let sphereVAO = registerMesh(r, sphere);
 
@@ -53,12 +55,20 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
+        gl.disable(gl.DEPTH_TEST);
+        gl.bindVertexArray(bgVAO);
+        gl.useProgram(r.bgProgram);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.bindVertexArray(null);
+        gl.enable(gl.DEPTH_TEST);
+
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+        
+        gl.useProgram(r.program);
         gl.bindVertexArray(sphereVAO);
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
-
         gl.bindVertexArray(sphereVAO2);
         gl.drawElements(gl.TRIANGLES, sphere2.indices.length, gl.UNSIGNED_SHORT, 0);
-
         gl.bindVertexArray(null);
     
         requestAnimationFrame(render);

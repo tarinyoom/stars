@@ -28,6 +28,7 @@ export type SceneParameters = {
 export type Renderer = {
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
+    bgProgram: WebGLProgram;
     projectionMatrixLocation: WebGLUniformLocation;
     modelViewMatrixLocation: WebGLUniformLocation;
 };
