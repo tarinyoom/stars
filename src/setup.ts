@@ -1,5 +1,6 @@
 import { sphereVertexShaderSource, sphereFragmentShaderSource, bgVertexShaderSource, bgFragmentShaderSource } from "./shaders";
 import { Mesh, Renderer } from "./types";
+import { mat4 } from "gl-matrix";
 
 // Function to create a shader
 function createShader(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
@@ -16,7 +17,7 @@ function createShader(gl: WebGL2RenderingContext, type: number, source: string):
     return shader;
 }
 
-function createProgram(gl: WebGL2RenderingContext, vertexSource: string, fragmentSource: string): WebGLProgram {
+export function createProgram(gl: WebGL2RenderingContext, vertexSource: string, fragmentSource: string): WebGLProgram {
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource);
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
     if (!vertexShader || !fragmentShader) throw new Error("Failed to initialize shaders");
@@ -83,35 +84,50 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
         gl: gl,
         program: program,
         bgProgram: createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource),
+        projectionMatrix: mat4.create(),
+        modelViewMatrix: mat4.create(),
         projectionMatrixLocation: projectionMatrixLocation,
         modelViewMatrixLocation: modelViewMatrixLocation
     };
 }
 
-export function registerBackground(r: Renderer): WebGLVertexArrayObject {
-
-    let gl = r.gl;
-
-    const fullscreenTriangleVertices = new Float32Array([
-        -1.0, -1.0,  // Bottom-left
-        3.0, -1.0,   // Bottom-right (extends beyond screen)
-        -1.0, 3.0,   // Top-left (extends beyond screen)
+export function createSkyboxVAO(gl: WebGL2RenderingContext) {
+    // Define a cube with positions only
+    const positions = new Float32Array([
+        -1, -1, -1,  1, -1, -1,  1,  1, -1,  -1,  1, -1, // Back face
+        -1, -1,  1, -1,  1,  1,  1,  1,  1,   1, -1,  1, // Front face
+        -1,  1, -1,  1,  1, -1,  1,  1,  1,  -1,  1,  1, // Top face
+        -1, -1, -1, -1, -1,  1,  1, -1,  1,   1, -1, -1, // Bottom face
+         1, -1, -1,  1, -1,  1,  1,  1,  1,   1,  1, -1, // Right face
+        -1, -1, -1, -1,  1, -1, -1,  1,  1,  -1, -1,  1  // Left face
     ]);
-    
+
+    const indices = new Uint16Array([
+         0,  1,  2,  2,  3,  0, // Back
+         4,  5,  6,  6,  7,  4, // Front
+         8,  9, 10, 10, 11,  8, // Top
+        12, 13, 14, 14, 15, 12, // Bottom
+        16, 17, 18, 18, 19, 16, // Right
+        20, 21, 22, 22, 23, 20  // Left
+    ]);
+
     const vao = gl.createVertexArray();
-    const vbo = gl.createBuffer();
-    
     gl.bindVertexArray(vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, fullscreenTriangleVertices, gl.STATIC_DRAW);
-    
-    // Enable position attribute (only 2D positions, no normals or texCoords needed)
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(0);
-    
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    const positionLocation = 0; // Assume we are using layout(location = 0)
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
     gl.bindVertexArray(null);
-    
-    return vao;
+    return { vao, indexBuffer, indexCount: indices.length };
 }
 
 export function registerMesh(r: Renderer, m: Mesh): WebGLVertexArrayObject {

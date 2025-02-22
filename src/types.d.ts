@@ -29,6 +29,8 @@ export type Renderer = {
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
     bgProgram: WebGLProgram;
+    projectionMatrix: mat4;
+    modelViewMatrix: mat4;
     projectionMatrixLocation: WebGLUniformLocation;
     modelViewMatrixLocation: WebGLUniformLocation;
 };

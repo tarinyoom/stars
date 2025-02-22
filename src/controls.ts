@@ -17,9 +17,9 @@ function updateProjectionMatrix(r: Renderer, width: number, height: number) {
     const near = 0.1;
     const far = 100.0;
 
-    const projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
+    r.projectionMatrix = perspectiveMatrix(fov, aspect, near, far);
 
-    r.gl.uniformMatrix4fv(r.projectionMatrixLocation, false, projectionMatrix);
+    r.gl.uniformMatrix4fv(r.projectionMatrixLocation, false, r.projectionMatrix);
 }
 
 export function onWindowResize(r: Renderer, canvas: HTMLCanvasElement, window: Window & typeof globalThis) {
@@ -53,7 +53,8 @@ function getModelViewMatrix(cameraQuat: quat) {
 }
 
 function updateModelViewMatrix(r: Renderer, q: quat) {
-    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, getModelViewMatrix(q));
+    r.modelViewMatrix = getModelViewMatrix(q);
+    r.gl.uniformMatrix4fv(r.modelViewMatrixLocation, false, r.modelViewMatrix);
 }
 
 function startDragging(scene: SceneParameters, offsetX: number, offsetY: number) {

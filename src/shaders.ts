@@ -64,32 +64,31 @@ void main() {
 
 export const bgVertexShaderSource = `#version 300 es
 precision highp float;
-layout(location = 0) in vec2 position;
-out vec2 uv;
+
+in vec3 a_position;
+out vec3 v_texCoord;
+
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
 
 void main() {
-    uv = position * 0.5 + 0.5; // Convert from clip space (-1,1) to UV space (0,1)
-    gl_Position = vec4(position, 0.0, 1.0);
+    v_texCoord = a_position;
+    mat4 view = mat4(mat3(u_viewMatrix)); // Remove translation component
+    gl_Position = u_projectionMatrix * view * vec4(a_position, 1.0);
 }
 `;
 
 export const bgFragmentShaderSource = `#version 300 es
 precision highp float;
 
-in vec2 uv;
+in vec3 v_texCoord;
 out vec4 fragColor;
 
-// Converts HSV to RGB (rainbow-like gradient)
-vec3 hsv2rgb(float h, float s, float v) {
-    float r = abs(h * 6.0 - 3.0) - 1.0;
-    float g = 2.0 - abs(h * 6.0 - 2.0);
-    float b = 2.0 - abs(h * 6.0 - 4.0);
-    return v * mix(vec3(1.0), clamp(vec3(r, g, b), 0.0, 1.0), s);
-}
-
 void main() {
-    float hue = mod(uv.x * 3.0 + uv.y * 2.0, 1.0); // Procedural rainbow
-    vec3 color = hsv2rgb(hue, 1.0, 1.0);
-    fragColor = vec4(color, 1.0);
+    vec3 dir = normalize(v_texCoord);
+    float gradient = smoothstep(-1.0, 1.0, dir.y); // Simple sky gradient
+
+    vec3 skyColor = mix(vec3(0.1, 0.2, 0.5), vec3(0.6, 0.8, 1.0), gradient);
+    fragColor = vec4(skyColor, 1.0);
 }
 `;

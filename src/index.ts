@@ -1,8 +1,9 @@
 import { createSphere } from "./createSphere";
 import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
-import { makeRenderer, registerBackground, registerMesh } from "./setup";
+import { makeRenderer, createSkyboxVAO, registerMesh, createProgram } from "./setup";
 import { quat } from "gl-matrix";
+import { bgFragmentShaderSource, bgVertexShaderSource } from "./shaders";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -41,7 +42,8 @@ canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
-    let bgVAO = registerBackground(r);
+    const bgProgram = createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource);
+    const bgVAO = createSkyboxVAO(gl);
 
     const sphere = createSphere(0.5, 30, 30, 0);
     let sphereVAO = registerMesh(r, sphere);
@@ -55,15 +57,23 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
-        gl.disable(gl.DEPTH_TEST);
-        gl.bindVertexArray(bgVAO);
-        gl.useProgram(r.bgProgram);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.depthFunc(gl.LEQUAL); // Ensure skybox is rendered behind everything
+
+        gl.useProgram(bgProgram);
+    
+        const viewMatrixLocation = gl.getUniformLocation(bgProgram, "u_viewMatrix");
+        const projectionMatrixLocation = gl.getUniformLocation(bgProgram, "u_projectionMatrix");
+    
+        gl.uniformMatrix4fv(viewMatrixLocation, false, r.modelViewMatrix);
+        gl.uniformMatrix4fv(projectionMatrixLocation, false, r.projectionMatrix);
+    
+        gl.bindVertexArray(bgVAO.vao);
+        gl.drawElements(gl.TRIANGLES, bgVAO.indexCount, gl.UNSIGNED_SHORT, 0);
         gl.bindVertexArray(null);
-        gl.enable(gl.DEPTH_TEST);
+    
+        gl.depthFunc(gl.LESS); // Restore default depth function
 
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        
         gl.useProgram(r.program);
         gl.bindVertexArray(sphereVAO);
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
