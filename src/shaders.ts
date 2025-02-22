@@ -15,7 +15,7 @@ varying vec2 vTexCoord;
 void main() {
     vec4 worldPosition = modelViewMatrix * vec4(position, 1.0);
     vPosition = worldPosition.xyz;
-    vNormal = normalize(mat3(modelViewMatrix) * normal);
+    vNormal = normalize(normal);
     vTexCoord = texCoord; // Pass UV coordinates to fragment shader
 
     gl_Position = projectionMatrix * worldPosition;
