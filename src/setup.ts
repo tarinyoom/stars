@@ -58,7 +58,7 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
     gl.useProgram(program);
 
     // Light properties
-    const lightDirection = new Float32Array([-0.5, -1.0, -0.5]); // Directional light
+    const lightDirection = new Float32Array([0.0, 1.0, 0.0]); // Directional light
     const lightColor = new Float32Array([1.0, 1.0, 1.0]); // White light
     const ambientColor = new Float32Array([0.2, 0.2, 0.2]); // Soft ambient lighting
     const viewPosition = new Float32Array([0.0, 0.0, 3.0]); // Camera position
