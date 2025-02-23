@@ -39,6 +39,7 @@ export function createProgram(gl: WebGL2RenderingContext, vertexSource: string, 
 export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
 
     const sphereProgram = createProgram(gl, sphereVertexShaderSource, sphereFragmentShaderSource);
+    const skyboxProgram = createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource);
 
     gl.useProgram(sphereProgram);
 
@@ -68,7 +69,7 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
     return {
         gl: gl,
         sphereProgram: sphereProgram,
-        bgProgram: createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource),
+        bgProgram: skyboxProgram,
         projectionMatrix: mat4.create(),
         modelViewMatrix: mat4.create(),
         projectionMatrixLocation: projectionMatrixLocation,
@@ -76,7 +77,10 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
     };
 }
 
-export function createSkyboxVAO(gl: WebGL2RenderingContext) {
+export function registerSkybox(r: Renderer) {
+
+    let gl = r.gl;
+
     // Define a cube with positions only
     const positions = new Float32Array([
         -1, -1, -1,  1, -1, -1,  1,  1, -1,  -1,  1, -1, // Back face

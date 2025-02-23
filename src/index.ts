@@ -1,9 +1,8 @@
 import { createSphere } from "./createSphere";
 import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
-import { makeRenderer, createSkyboxVAO, registerMesh, createProgram } from "./setup";
+import { makeRenderer, registerSkybox, registerMesh, createProgram } from "./setup";
 import { quat } from "gl-matrix";
-import { bgFragmentShaderSource, bgVertexShaderSource } from "./shaders";
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -42,8 +41,7 @@ canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
-    const bgProgram = createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource);
-    const bgVAO = createSkyboxVAO(gl);
+    let bgVAO = registerSkybox(r);
 
     const sphere = createSphere(0.5, 30, 30, 0);
     let sphereVAO = registerMesh(r, sphere);
@@ -59,10 +57,10 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
 
         gl.depthFunc(gl.LEQUAL); // Ensure skybox is rendered behind everything
 
-        gl.useProgram(bgProgram);
+        gl.useProgram(r.bgProgram);
     
-        const viewMatrixLocation = gl.getUniformLocation(bgProgram, "u_viewMatrix");
-        const projectionMatrixLocation = gl.getUniformLocation(bgProgram, "u_projectionMatrix");
+        const viewMatrixLocation = gl.getUniformLocation(r.bgProgram, "u_viewMatrix");
+        const projectionMatrixLocation = gl.getUniformLocation(r.bgProgram, "u_projectionMatrix");
     
         gl.uniformMatrix4fv(viewMatrixLocation, false, r.modelViewMatrix);
         gl.uniformMatrix4fv(projectionMatrixLocation, false, r.projectionMatrix);
