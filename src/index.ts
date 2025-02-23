@@ -3,6 +3,7 @@ import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouch
 import { SceneParameters } from "./types";
 import { makeRenderer, registerSkybox, registerMesh, createProgram } from "./setup";
 import { quat } from "gl-matrix";
+import textureURL from './assets/earthmap1k.jpg';
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -38,6 +39,38 @@ canvas.addEventListener('touchmove', onTouchMove(r, scene), { passive: false });
 canvas.addEventListener('touchup', onTouchUp(scene), { passive: false });
 canvas.addEventListener('touchleave', onTouchUp(scene), { passive: false });
 
+// Assuming `gl` is your WebGLRenderingContext
+function loadTexture(gl: WebGLRenderingContext, textureURL: string): WebGLTexture {
+  const texture = gl.createTexture();
+  if (!texture) {
+    throw new Error('Failed to create texture');
+  }
+
+  // Create an image element and load the texture
+  const image = new Image();
+  image.onload = () => {
+    // Bind the texture to the WebGL context
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Set the texture parameters (you can modify these for your use case)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // Upload the image to the GPU
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
+    // Generate mipmaps if needed (optional, depends on your needs)
+    gl.generateMipmap(gl.TEXTURE_2D);
+  };
+
+  // Set the image source
+  image.src = textureURL;
+
+  return texture;
+}
+
 // Higher-order function to generate a render function with specific WebGL context and parameters
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
@@ -45,6 +78,7 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
 
     const sphere = createSphere(0.5, 30, 30, 0);
     let sphereVAO = registerMesh(r, sphere);
+    let sphereTex = loadTexture(gl, textureURL);
 
     const sphere2 = createSphere(0.1, 10, 10, 1.0);
     let sphereVAO2 = registerMesh(r, sphere2);
@@ -74,6 +108,13 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.clear(gl.DEPTH_BUFFER_BIT);
         gl.useProgram(r.sphereProgram);
         gl.bindVertexArray(sphereVAO);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, sphereTex);
+        // Set the sampler uniform to texture unit 0
+        const textureLocation = gl.getUniformLocation(r.sphereProgram, "uTexture");
+        gl.uniform1i(textureLocation, 0);
+
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
         gl.bindVertexArray(sphereVAO2);
         gl.drawElements(gl.TRIANGLES, sphere2.indices.length, gl.UNSIGNED_SHORT, 0);

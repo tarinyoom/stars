@@ -33,13 +33,17 @@ uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform vec3 viewPosition;
+uniform sampler2D uTexture;  // Texture sampler
 
 void main() {
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(lightDirection);
     vec3 viewDir = normalize(viewPosition - vPosition);
 
-    // Ambient lighting
+    // Sample the texture at the given UV coordinates
+    vec3 textureColor = texture2D(uTexture, vTexCoord).rgb;
+
+    // Ambient lighting (applies regardless of the texture)
     vec3 ambient = ambientColor;
 
     // Diffuse lighting (Lambertian reflection)
@@ -51,13 +55,10 @@ void main() {
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = lightColor * spec;
 
-    // Procedural checkerboard texture
-    float scale = 10.0; // Number of squares in checkerboard pattern
-    float check = mod(floor(vTexCoord.x * scale) + floor(vTexCoord.y * scale), 2.0);
-    vec3 checkerColor = mix(vec3(1.0, 1.0, 1.0), vec3(0.0, 0.0, 0.0), check);
+    // Combine texture color with lighting
+    vec3 finalColor = (ambient + diffuse + specular) * textureColor;
 
-    // Combine texture with lighting
-    vec3 finalColor = (ambient + diffuse + specular) * checkerColor;
+    // Output the final color
     gl_FragColor = vec4(finalColor, 1.0);
 }
 `;
