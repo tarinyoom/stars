@@ -38,22 +38,7 @@ export function createProgram(gl: WebGL2RenderingContext, vertexSource: string, 
 
 export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
 
-    // Create shaders
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, sphereVertexShaderSource);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, sphereFragmentShaderSource);
-
-    // Create shader program
-    const program = gl.createProgram();
-    if (!program) throw new Error("Failed to create program");
-
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error(gl.getProgramInfoLog(program));
-        throw new Error("Program linking failed");
-    }
+    const program = createProgram(gl, sphereVertexShaderSource, sphereFragmentShaderSource);
 
     gl.useProgram(program);
 
