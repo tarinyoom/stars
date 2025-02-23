@@ -74,7 +74,7 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.depthFunc(gl.LESS); // Restore default depth function
 
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        gl.useProgram(r.program);
+        gl.useProgram(r.sphereProgram);
         gl.bindVertexArray(sphereVAO);
         gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
         gl.bindVertexArray(sphereVAO2);

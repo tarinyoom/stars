@@ -38,9 +38,9 @@ export function createProgram(gl: WebGL2RenderingContext, vertexSource: string, 
 
 export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
 
-    const program = createProgram(gl, sphereVertexShaderSource, sphereFragmentShaderSource);
+    const sphereProgram = createProgram(gl, sphereVertexShaderSource, sphereFragmentShaderSource);
 
-    gl.useProgram(program);
+    gl.useProgram(sphereProgram);
 
     // Light properties
     const lightDirection = new Float32Array([0.0, 1.0, 0.0]); // Directional light
@@ -49,25 +49,25 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
     const viewPosition = new Float32Array([0.0, 0.0, 3.0]); // Camera position
 
     // Pass lighting data to shaders
-    const lightDirectionLocation = gl.getUniformLocation(program, "lightDirection");
-    const lightColorLocation = gl.getUniformLocation(program, "lightColor");
-    const ambientColorLocation = gl.getUniformLocation(program, "ambientColor");
-    const viewPositionLocation = gl.getUniformLocation(program, "viewPosition");
+    const lightDirectionLocation = gl.getUniformLocation(sphereProgram, "lightDirection");
+    const lightColorLocation = gl.getUniformLocation(sphereProgram, "lightColor");
+    const ambientColorLocation = gl.getUniformLocation(sphereProgram, "ambientColor");
+    const viewPositionLocation = gl.getUniformLocation(sphereProgram, "viewPosition");
 
     gl.uniform3fv(lightDirectionLocation, lightDirection);
     gl.uniform3fv(lightColorLocation, lightColor);
     gl.uniform3fv(ambientColorLocation, ambientColor);
     gl.uniform3fv(viewPositionLocation, viewPosition);
 
-    const projectionMatrixLocation = gl.getUniformLocation(program, "projectionMatrix");
+    const projectionMatrixLocation = gl.getUniformLocation(sphereProgram, "projectionMatrix");
     if (!projectionMatrixLocation) throw new Error("Failed to get projection matrix location");
 
-    const modelViewMatrixLocation = gl.getUniformLocation(program, "modelViewMatrix");
+    const modelViewMatrixLocation = gl.getUniformLocation(sphereProgram, "modelViewMatrix");
     if (!modelViewMatrixLocation) throw new Error("Failed to get model view matrix location");
 
     return {
         gl: gl,
-        program: program,
+        sphereProgram: sphereProgram,
         bgProgram: createProgram(gl, bgVertexShaderSource, bgFragmentShaderSource),
         projectionMatrix: mat4.create(),
         modelViewMatrix: mat4.create(),
@@ -151,17 +151,17 @@ export function registerMesh(r: Renderer, m: Mesh): WebGLVertexArrayObject {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.indices, gl.STATIC_DRAW);
 
     // Step 4: Get attribute locations and enable them
-    const positionAttribute = gl.getAttribLocation(r.program, "position");
+    const positionAttribute = gl.getAttribLocation(r.sphereProgram, "position");
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.enableVertexAttribArray(positionAttribute);
     gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
 
-    const normalAttribute = gl.getAttribLocation(r.program, "normal");
+    const normalAttribute = gl.getAttribLocation(r.sphereProgram, "normal");
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.enableVertexAttribArray(normalAttribute);
     gl.vertexAttribPointer(normalAttribute, 3, gl.FLOAT, false, 0, 0);
 
-    const texCoordAttribute = gl.getAttribLocation(r.program, "texCoord");
+    const texCoordAttribute = gl.getAttribLocation(r.sphereProgram, "texCoord");
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
     gl.enableVertexAttribArray(texCoordAttribute);
     gl.vertexAttribPointer(texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
