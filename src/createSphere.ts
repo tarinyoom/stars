@@ -25,7 +25,7 @@ export function createSphere(radius: number, latitudeBands: number, longitudeBan
 
             positions.push(radius * x + xOffset, radius * y, radius * z);
             normals.push(x, y, z);
-            texCoords.push(u, 1 - v); // Flip V coordinate
+            texCoords.push(1 - u, v); // Flip U coordinate
         }
     }
 
