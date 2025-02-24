@@ -50,13 +50,8 @@ void main() {
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = lightColor * diff;
 
-    // Specular lighting (Blinn-Phong reflection)
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
-    vec3 specular = lightColor * spec;
-
     // Combine texture color with lighting
-    vec3 finalColor = (ambient + diffuse + specular) * textureColor;
+    vec3 finalColor = (ambient + diffuse) * textureColor;
 
     // Output the final color
     gl_FragColor = vec4(finalColor, 1.0);
