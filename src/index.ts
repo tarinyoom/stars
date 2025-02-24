@@ -76,11 +76,11 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
 
     let bgVAO = registerSkybox(r);
 
-    const sphere = createSphere(0.5, 30, 30, 0);
+    const sphere = createSphere(0.5, 60, 60, 0);
     let sphereVAO = registerMesh(r, sphere);
     let sphereTex = loadTexture(gl, textureURL);
 
-    const sphere2 = createSphere(0.1, 10, 10, 1.0);
+    const sphere2 = createSphere(0.1, 20, 20, 1.0);
     let sphereVAO2 = registerMesh(r, sphere2);
 
     // Return the render function
