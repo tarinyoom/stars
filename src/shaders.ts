@@ -58,33 +58,35 @@ void main() {
 }
 `;
 
-export const bgVertexShaderSource = `#version 300 es
+// Vertex Shader
+export const bgVertexShaderSource = `
 precision highp float;
 
-in vec3 a_position;
-out vec3 v_texCoord;
+attribute vec3 a_position; // Corrected: should be an attribute
+varying vec2 v_texCoord;   // Corrected: v_texCoord should be a vec2
 
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
 
 void main() {
-    v_texCoord = a_position;
     mat4 view = mat4(mat3(u_viewMatrix)); // Remove translation component
     gl_Position = u_projectionMatrix * view * vec4(a_position, 1.0);
+
+    // Map position to texture coordinates (assuming a unit cube [-1,1])
+    v_texCoord = a_position.xy * 0.5 + 0.5; // Convert from [-1,1] to [0,1]
 }
 `;
 
-export const bgFragmentShaderSource = `#version 300 es
+// Fragment Shader
+export const bgFragmentShaderSource = `
 precision highp float;
 
-in vec3 v_texCoord;
-out vec4 fragColor;
+varying vec2 v_texCoord;
+
+uniform sampler2D uTexture;  // Texture sampler
 
 void main() {
-    vec3 dir = normalize(v_texCoord);
-    float gradient = smoothstep(-1.0, 1.0, dir.y); // Simple sky gradient
-
-    vec3 skyColor = mix(vec3(0.1, 0.2, 0.5), vec3(0.6, 0.8, 1.0), gradient);
-    fragColor = vec4(skyColor, 1.0);
+    vec3 skyColor = texture2D(uTexture, v_texCoord).rgb;
+    gl_FragColor = vec4(skyColor, 1.0);
 }
 `;
