@@ -62,8 +62,8 @@ void main() {
 export const bgVertexShaderSource = `
 precision highp float;
 
-attribute vec3 a_position; // Corrected: should be an attribute
-varying vec2 v_texCoord;   // Corrected: v_texCoord should be a vec2
+attribute vec3 a_position;
+varying vec2 v_texCoord;
 
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
@@ -72,8 +72,10 @@ void main() {
     mat4 view = mat4(mat3(u_viewMatrix)); // Remove translation component
     gl_Position = u_projectionMatrix * view * vec4(a_position, 1.0);
 
-    // Map position to texture coordinates (assuming a unit cube [-1,1])
-    v_texCoord = a_position.xy * 0.5 + 0.5; // Convert from [-1,1] to [0,1]
+    // Cylindrical texture mapping
+    float azimuth = atan(a_position.z, a_position.x);
+    v_texCoord.x = azimuth / (2.0 * 3.14159265359) + 0.5; // Map azimuth to [0,1]
+    v_texCoord.y = a_position.y * 0.5 + 0.5; // Map y from [-1,1] to [0,1]
 }
 `;
 
