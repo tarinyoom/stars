@@ -4,6 +4,7 @@ import { SceneParameters } from "./types";
 import { makeRenderer, registerSkybox, registerMesh, createProgram } from "./setup";
 import { quat } from "gl-matrix";
 import textureURL from './assets/earthmap1k.jpg';
+import skymapURL from './assets/cylinder_skymap.jpg';
 
 // Get the WebGL context
 const canvas = document.getElementById("glcanvas") as HTMLCanvasElement;
@@ -75,6 +76,7 @@ function loadTexture(gl: WebGLRenderingContext, textureURL: string): WebGLTextur
 export function createRenderFunction(gl: WebGL2RenderingContext) {
 
     let bgVAO = registerSkybox(r);
+    let bgTex = loadTexture(gl, skymapURL);
 
     const sphere = createSphere(0.5, 60, 60, 0);
     let sphereVAO = registerMesh(r, sphere);
@@ -100,6 +102,8 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
         gl.uniformMatrix4fv(projectionMatrixLocation, false, r.projectionMatrix);
     
         gl.bindVertexArray(bgVAO.vao);
+        gl.bindTexture(gl.TEXTURE_2D, bgTex);
+
         gl.drawElements(gl.TRIANGLES, bgVAO.indexCount, gl.UNSIGNED_SHORT, 0);
         gl.bindVertexArray(null);
     
