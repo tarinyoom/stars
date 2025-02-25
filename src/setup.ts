@@ -78,44 +78,78 @@ export function makeRenderer(gl: WebGL2RenderingContext): Renderer {
 }
 
 export function registerSkybox(r: Renderer) {
+    const gl = r.gl;
+    
+    const segments = 64; // Longitude (around Y-axis)
+    const rings = 32; // Latitude (from pole to pole)
+    const radius = 1.0;
 
-    let gl = r.gl;
+    const positions: number[] = [];
+    const texCoords: number[] = [];
+    const indices: number[] = [];
 
-    // Define a cube with positions only
-    const positions = new Float32Array([
-        -1, -1, -1,  1, -1, -1,  1,  1, -1,  -1,  1, -1, // Back face
-        -1, -1,  1, -1,  1,  1,  1,  1,  1,   1, -1,  1, // Front face
-        -1,  1, -1,  1,  1, -1,  1,  1,  1,  -1,  1,  1, // Top face
-        -1, -1, -1, -1, -1,  1,  1, -1,  1,   1, -1, -1, // Bottom face
-         1, -1, -1,  1, -1,  1,  1,  1,  1,   1,  1, -1, // Right face
-        -1, -1, -1, -1,  1, -1, -1,  1,  1,  -1, -1,  1  // Left face
-    ]);
+    // Generate vertices (excluding poles for now)
+    for (let lat = 0; lat <= rings; lat++) {
+        const v = lat / rings;
+        const theta = v * Math.PI; // Latitude angle from 0 (north pole) to π (south pole)
 
-    const indices = new Uint16Array([
-         0,  1,  2,  2,  3,  0, // Back
-         4,  5,  6,  6,  7,  4, // Front
-         8,  9, 10, 10, 11,  8, // Top
-        12, 13, 14, 14, 15, 12, // Bottom
-        16, 17, 18, 18, 19, 16, // Right
-        20, 21, 22, 22, 23, 20  // Left
-    ]);
+        for (let lon = 0; lon <= segments; lon++) {
+            const u = lon / segments;
+            const phi = u * 2.0 * Math.PI; // Longitude angle around Y-axis
 
+            const x = Math.sin(theta) * Math.cos(phi) * radius;
+            const y = Math.cos(theta) * radius; // Y-axis is up
+            const z = Math.sin(theta) * Math.sin(phi) * radius;
+
+            positions.push(x, y, z);
+            texCoords.push(u, v);
+        }
+    }
+
+    // Generate indices
+    for (let lat = 0; lat < rings; lat++) {
+        for (let lon = 0; lon < segments; lon++) {
+            const first = lat * (segments + 1) + lon;
+            const second = first + segments + 1;
+
+            indices.push(first, second, first + 1);
+            indices.push(second, second + 1, first + 1);
+        }
+    }
+
+    // Convert to Typed Arrays
+    const positionArray = new Float32Array(positions);
+    const texCoordArray = new Float32Array(texCoords);
+    const indexArray = new Uint16Array(indices);
+
+    // Create VAO
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
 
+    // Position Buffer
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-    const positionLocation = 0; // Assume we are using layout(location = 0)
+    gl.bufferData(gl.ARRAY_BUFFER, positionArray, gl.STATIC_DRAW);
+    const positionLocation = 0;
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
+    // Texture Coordinate Buffer
+    const texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoordArray, gl.STATIC_DRAW);
+    const texCoordLocation = 1;
+    gl.enableVertexAttribArray(texCoordLocation);
+    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Index Buffer
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
+
+    // Unbind VAO
     gl.bindVertexArray(null);
+
     return { vao, indexBuffer, indexCount: indices.length };
 }
 
