@@ -1,6 +1,7 @@
 import { Mesh } from "./types";
+import { vec3 } from "gl-matrix";
 
-export function createSphere(radius: number, latitudeBands: number, longitudeBands: number, xOffset: number): Mesh {
+export function createSphere(radius: number, latitudeBands: number, longitudeBands: number, offset: vec3): Mesh {
     const positions = [];
     const normals = [];
     const texCoords = [];
@@ -23,7 +24,7 @@ export function createSphere(radius: number, latitudeBands: number, longitudeBan
             const u = lon / longitudeBands; // Generate UV coordinates
             const v = lat / latitudeBands;
 
-            positions.push(radius * x + xOffset, radius * y, radius * z);
+            positions.push(radius * x + offset[0], radius * y + offset[1], radius * z + offset[2]);
             normals.push(x, y, z);
             texCoords.push(1 - u, v); // Flip U coordinate
         }

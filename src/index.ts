@@ -2,7 +2,7 @@ import { createSphere } from "./createSphere";
 import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
 import { makeRenderer, registerSkybox, registerMesh } from "./setup";
-import { quat } from "gl-matrix";
+import { quat, vec3 } from "gl-matrix";
 import textureURL from './assets/earthmap1k.jpg';
 import skymapURL from './assets/cylinder_skymap.jpg';
 
@@ -22,7 +22,8 @@ let scene: SceneParameters = {
     draggingStartY: 0.0,
     azimuthalViewAngle: 0.0,
     polarViewAngle: 1.0,
-    cameraAngle: quat.create()
+    cameraAngle: quat.create(),
+    sunPosition: vec3.fromValues(0, 0, 100)
 };
 
 // Resize canvas to fill the screen
@@ -78,11 +79,11 @@ export function createRenderFunction(gl: WebGL2RenderingContext) {
     let bgVAO = registerSkybox(r);
     let bgTex = loadTexture(gl, skymapURL);
 
-    const sphere = createSphere(0.5, 60, 60, 0);
+    const sphere = createSphere(0.5, 60, 60, vec3.fromValues(0, 0, 0));
     let sphereVAO = registerMesh(r, sphere);
     let sphereTex = loadTexture(gl, textureURL);
 
-    const sphere2 = createSphere(0.1, 20, 20, 1.0);
+    const sphere2 = createSphere(5, 60, 60, scene.sunPosition);
     let sphereVAO2 = registerMesh(r, sphere2);
 
     // Return the render function
