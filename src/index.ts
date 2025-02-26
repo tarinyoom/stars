@@ -1,7 +1,7 @@
 import { createSphere } from "./createSphere";
 import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouchUp, onWindowResize } from "./controls";
 import { SceneParameters } from "./types";
-import { makeRenderer, registerSkybox, registerMesh, createProgram } from "./setup";
+import { makeRenderer, registerSkybox, registerMesh } from "./setup";
 import { quat } from "gl-matrix";
 import textureURL from './assets/earthmap1k.jpg';
 import skymapURL from './assets/cylinder_skymap.jpg';
