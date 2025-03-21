@@ -1,3 +1,7 @@
 node_modules
 .parcel-cache
 dist
+
+rust/target
+rust/pkg
+rust/Cargo.lock
