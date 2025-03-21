@@ -3,8 +3,8 @@ import { onMouseDown, onMouseMove, onMouseUp, onTouchStart, onTouchMove, onTouch
 import { SceneParameters } from "./types";
 import { makeRenderer, registerSkybox, registerMesh } from "./setup";
 import { quat, vec3 } from "gl-matrix";
-import textureURL from './assets/earthmap1k.jpg';
-import skymapURL from './assets/cylinder_skymap.jpg';
+import textureURL from '../assets/earthmap1k.jpg';
+import skymapURL from '../assets/cylinder_skymap.jpg';
 import init, {greet} from "../rust/pkg/sim"
 
 
